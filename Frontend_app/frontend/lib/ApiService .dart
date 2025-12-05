@@ -1,9 +1,8 @@
 import 'dart:io';
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
 
 class ApiService {
   static const String url = "http://10.88.17.81:5000/addmusic";
-
 
   static Future<bool> uploadMusic({
     required String title,
@@ -12,27 +11,31 @@ class ApiService {
     required String type,
     required File image,
     required File audio,
+    required Function(int sent, int total) onProgress,
   }) async {
+    Dio dio = Dio();
 
-    var request = http.MultipartRequest("POST", Uri.parse(url));
+    FormData formData = FormData.fromMap({
+      "title": title,
+      "singer": singer,
+      "language": language,
+      "type": type,
+      "image": await MultipartFile.fromFile(image.path),
+      "audio": await MultipartFile.fromFile(audio.path),
+    });
 
-    // JSON fields
-    request.fields["title"] = title;
-    request.fields["singer"] = singer;
-    request.fields["language"] = language;
-    request.fields["type"] = type;
+    try {
+      Response response = await dio.post(
+        url,
+        data: formData,
+        onSendProgress: (sent, total) {
+          onProgress(sent, total); // Percentage will be exact ✔
+        },
+      );
 
-    // Attach image
-    request.files.add(
-      await http.MultipartFile.fromPath("image", image.path),
-    );
-
-    // Attach audio
-    request.files.add(
-      await http.MultipartFile.fromPath("audio", audio.path),
-    );
-
-    var response = await request.send();
-    return response.statusCode == 200;
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
+    }
   }
 }
