@@ -1,0 +1,6 @@
+flask 
+cors
+pymongo
+cloudinary
+python-dotenv
+
