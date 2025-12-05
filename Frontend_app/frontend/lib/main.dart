@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'AddMusicForm.dart';
+import 'HomePage.dart';
+import 'SearchPage.dart';
+import 'ProfilePage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,8 +14,15 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: const AdminPanel(),
+
       debugShowCheckedModeBanner: false,
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomePage(),
+        '/search': (context) => SearchPage(),
+        '/profile': (context) => ProfilePage(),
+
+      },
     );
   }
 }
