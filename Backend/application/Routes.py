@@ -28,3 +28,14 @@ def addmusic():
         return jsonify({"error":str(e)}),500
 
 
+@app.route("/getallmusic",methods=["GET"])
+def getallmusic():
+    try:
+        songs=list(db.Songs.find())
+
+        for music in songs:
+            music["_id"]=str(music["_id"])
+
+        return jsonify({"message":"fetteched successfully","data":str(songs)}),200
+    except Exception as e:
+        return jsonify({"error":str(e)}),500
