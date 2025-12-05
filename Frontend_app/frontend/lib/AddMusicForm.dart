@@ -19,108 +19,210 @@ class _AddMusicFormState extends State<AddMusicForm> {
 
   File? selectedImage;
   File? selectedAudio;
+  double uploadProgress = 0.0;
+  bool isUploading = false;
 
   final ImagePicker picker = ImagePicker();
 
-  // Pick image
   Future pickImage() async {
     final XFile? img = await picker.pickImage(source: ImageSource.gallery);
     if (img != null) {
-      setState(() {
-        selectedImage = File(img.path);
-      });
+      setState(() => selectedImage = File(img.path));
     }
   }
 
-  // Pick audio file
   Future pickAudio() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
-
     if (result != null) {
-      setState(() {
-        selectedAudio = File(result.files.single.path!);
-      });
+      setState(() => selectedAudio = File(result.files.single.path!));
     }
+  }
+
+  bool validateFields() {
+    if (titleCtrl.text.isEmpty ||
+        singerCtrl.text.isEmpty ||
+        langCtrl.text.isEmpty ||
+        typeCtrl.text.isEmpty ||
+        selectedImage == null ||
+        selectedAudio == null) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("All fields are required!")));
+      return false;
+    }
+    return true;
+  }
+
+  InputDecoration buildInputDecoration(String label, IconData icon) {
+    return InputDecoration(
+      labelText: label,
+      prefixIcon: Icon(icon, color: Colors.deepPurple),
+      filled: true,
+      fillColor: Colors.grey.shade100,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(color: Colors.deepPurple, width: 2),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Add Music Data")),
+      backgroundColor: Colors.grey.shade200,
+      appBar: AppBar(
+        title: const Text("Add Music Data"),
+        centerTitle: true,
+        backgroundColor: Colors.deepPurple,
+        elevation: 0,
+      ),
+
       body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-            TextField(controller: titleCtrl, decoration: const InputDecoration(labelText: "Title")),
-            TextField(controller: singerCtrl, decoration: const InputDecoration(labelText: "Singer Name")),
-            TextField(controller: langCtrl, decoration: const InputDecoration(labelText: "Language")),
-            TextField(controller: typeCtrl, decoration: const InputDecoration(labelText: "Music Type")),
+        padding: const EdgeInsets.all(16),
+        child: Card(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          elevation: 5,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: ListView(
+              children: [
+                TextField(
+                    controller: titleCtrl,
+                    decoration: buildInputDecoration("Song Title", Icons.music_note)),
 
-            const SizedBox(height: 20),
+                const SizedBox(height: 15),
 
-            ElevatedButton(
-              onPressed: pickImage,
-              child: const Text("Select Image"),
+                TextField(
+                    controller: singerCtrl,
+                    decoration: buildInputDecoration("Singer Name", Icons.person)),
+
+                const SizedBox(height: 15),
+
+                TextField(
+                    controller: langCtrl,
+                    decoration: buildInputDecoration("Language", Icons.language)),
+
+                const SizedBox(height: 15),
+
+                TextField(
+                    controller: typeCtrl,
+                    decoration: buildInputDecoration("Music Type", Icons.category)),
+
+                const SizedBox(height: 20),
+
+                // IMAGE PICK BUTTON
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.deepPurple,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.image,color: Colors.white,),
+                  onPressed: pickImage,
+                  label: Text("Select Image",style: TextStyle(color: Colors.white),),
+                ),
+
+                const SizedBox(height: 10),
+
+                selectedImage != null
+                    ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: Image.file(selectedImage!, height: 120))
+                    : const Text("No image selected", style: TextStyle(color: Colors.grey)),
+
+                const SizedBox(height: 20),
+
+                // AUDIO PICK BUTTON
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.indigo,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                  ),
+                  icon: const Icon(Icons.audio_file,color: Colors.white,),
+                  onPressed: pickAudio,
+                  label: const Text("Select Audio File",style: TextStyle(color: Colors.white),),
+                ),
+
+                const SizedBox(height: 10),
+
+                selectedAudio != null
+                    ? Text("Audio: ${selectedAudio!.path.split('/').last}",
+                    style: const TextStyle(fontWeight: FontWeight.bold))
+                    : const Text("No audio selected", style: TextStyle(color: Colors.grey)),
+
+                const SizedBox(height: 25),
+
+                // PROGRESS BAR
+                if (isUploading) ...[
+                  LinearProgressIndicator(
+                    value: uploadProgress,
+                    minHeight: 8,
+                    color: Colors.deepPurple,
+                    backgroundColor: Colors.grey.shade300,
+                  ),
+                  const SizedBox(height: 10),
+                  Center(
+                    child: Text("${(uploadProgress * 100).toStringAsFixed(0)}% Uploaded",
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 20),
+                ],
+
+                // SUBMIT BUTTON
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                  ),
+                  child: const Text("Upload Song", style: TextStyle(fontSize: 17)),
+                  onPressed: () async {
+                    if (!validateFields()) return;
+
+                    setState(() {
+                      isUploading = true;
+                      uploadProgress = 0.0;
+                    });
+
+                    bool success = await ApiService.uploadMusic(
+                      title: titleCtrl.text,
+                      singer: singerCtrl.text,
+                      language: langCtrl.text,
+                      type: typeCtrl.text,
+                      image: selectedImage!,
+                      audio: selectedAudio!,
+                      onProgress: (sent, total) {
+                        setState(() => uploadProgress = sent / total);
+                      },
+                    );
+
+                    setState(() => isUploading = false);
+
+                    if (success) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Uploaded Successfully!")),
+                      );
+
+                      setState(() {
+                        titleCtrl.clear();
+                        singerCtrl.clear();
+                        langCtrl.clear();
+                        typeCtrl.clear();
+                        selectedImage = null;
+                        selectedAudio = null;
+                        uploadProgress = 0.0;
+                      });
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text("Upload Failed!")),
+                      );
+                    }
+                  },
+                ),
+              ],
             ),
-            selectedImage != null
-                ? Image.file(selectedImage!, height: 100)
-                : const Text("No image selected"),
-
-            const SizedBox(height: 20),
-
-            ElevatedButton(
-              onPressed: pickAudio,
-              child: const Text("Select Audio "),
-            ),
-            selectedAudio != null
-                ? Text("Audio: ${selectedAudio!.path.split('/').last}")
-            // file name liya gaya
-                : const Text("No audio selected"),
-
-            const SizedBox(height: 30),
-
-            ElevatedButton(
-              child: const Text("Submit"),
-              onPressed: () async {
-                if (selectedImage == null || selectedAudio == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Select image & audio first")),
-                  );
-                  return;
-                }
-
-                bool success = await ApiService.uploadMusic(
-                  title: titleCtrl.text,
-                  singer: singerCtrl.text,
-                  language: langCtrl.text,
-                  type: typeCtrl.text,
-                  image: selectedImage!,
-                  audio: selectedAudio!,
-                );
-
-                if (success) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Uploaded Successfully!")),
-                  );
-
-                  // 🔥 CLEAR ALL FIELDS HERE
-                  setState(() {
-                    titleCtrl.clear();
-                    singerCtrl.clear();
-                    langCtrl.clear();
-                    typeCtrl.clear();
-                    selectedImage = null;
-                    selectedAudio = null;
-                  });
-
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text("Upload Failed!")),
-                  );
-                }
-              },
-            ),
-          ],
+          ),
         ),
       ),
     );
