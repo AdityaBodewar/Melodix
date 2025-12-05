@@ -36,6 +36,6 @@ def getallmusic():
         for music in songs:
             music["_id"]=str(music["_id"])
 
-        return jsonify({"message":"fetteched successfully","data":str(songs)}),200
+        return jsonify({"message":"fetteched successfully","data":songs}),200
     except Exception as e:
         return jsonify({"error":str(e)}),500
