@@ -81,7 +81,7 @@ class _AddMusicFormState extends State<AddMusicForm> {
       labelText: label,
       prefixIcon: Icon(icon, color: Colors.deepPurple),
       filled: true,
-      fillColor: Colors.grey.shade100,
+      fillColor: Colors.grey,
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
@@ -93,11 +93,11 @@ class _AddMusicFormState extends State<AddMusicForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade200,
+      backgroundColor: Colors.white54,
       appBar: AppBar(
         title: const Text("Add Music Data"),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.teal,
         elevation: 0,
       ),
 
@@ -111,8 +111,16 @@ class _AddMusicFormState extends State<AddMusicForm> {
             child: ListView(
               children: [
                 TextField(
-                    controller: titleCtrl,
-                    decoration: buildInputDecoration("Song Title", Icons.music_note)),
+                  controller: titleCtrl,
+                  style: TextStyle(color: Colors.white,),
+                  decoration: buildInputDecoration(
+                    "Song Title",
+                    Icons.music_note,
+
+                  ),
+                ),
+
+
 
                 const SizedBox(height: 15),
 

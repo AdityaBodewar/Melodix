@@ -60,9 +60,9 @@ class MusicApp extends StatelessWidget {
 
       routes: {
         '/home': (context) =>  HomePage(),
-        '/search': (context) =>  SearchPage(),
-        '/library': (context) =>  LibraryPage(),
-        '/profile': (context) =>  ProfilePage(),
+        '/search': (context) =>  Searchpage(),
+        '/library': (context) =>  Mylibrary(),
+        '/profile': (context) =>  Profilepage(),
       },
     );
   }
