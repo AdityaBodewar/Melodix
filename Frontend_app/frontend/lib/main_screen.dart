@@ -17,9 +17,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
      HomePage(),
-     SearchPage(),
-     LibraryPage(),
-     ProfilePage(),
+     Searchpage(),
+     Mylibrary(),
+     Profilepage(),
 
 
 
@@ -40,7 +40,7 @@ class _MainScreenState extends State<MainScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                _buildNowPlayingBar(),
+                // _buildNowPlayingBar(),
                 _buildBottomNavigationBar(),
               ],
             ),
@@ -50,65 +50,65 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildNowPlayingBar() {
-    return Container(
-      height: 65,
-      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 55,
-            height: 55,
-            margin: const EdgeInsets.all(5),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.blue
-            ),
-            child: const Icon(Icons.music_note, color: Colors.white),
-          ),
-          const Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Chhupana Bhi Nahin Aata',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Baazigar — Vinod Rathod',
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
-            onPressed: () {},
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
-    );
-  }
+  // Widget _buildNowPlayingBar() {
+  //   return Container(
+  //     height: 65,
+  //     margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+  //     decoration: BoxDecoration(
+  //       gradient: const LinearGradient(
+  //         colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
+  //       ),
+  //       borderRadius: BorderRadius.circular(12),
+  //     ),
+  //     child: Row(
+  //       children: [
+  //         Container(
+  //           width: 55,
+  //           height: 55,
+  //           margin: const EdgeInsets.all(5),
+  //           decoration: BoxDecoration(
+  //             borderRadius: BorderRadius.circular(8),
+  //             color: Colors.blue
+  //           ),
+  //           child: const Icon(Icons.music_note, color: Colors.white),
+  //         ),
+  //         const Expanded(
+  //           child: Padding(
+  //             padding: EdgeInsets.symmetric(horizontal: 12),
+  //             child: Column(
+  //               mainAxisAlignment: MainAxisAlignment.center,
+  //               crossAxisAlignment: CrossAxisAlignment.start,
+  //               children: [
+  //                 Text(
+  //                   'Chhupana Bhi Nahin Aata',
+  //                   style: TextStyle(
+  //                     color: Colors.white,
+  //                     fontSize: 14,
+  //                     fontWeight: FontWeight.w500,
+  //                   ),
+  //                   maxLines: 1,
+  //                   overflow: TextOverflow.ellipsis,
+  //                 ),
+  //                 SizedBox(height: 4),
+  //                 Text(
+  //                   'Baazigar — Vinod Rathod',
+  //                   style: TextStyle(color: Colors.grey, fontSize: 12),
+  //                   maxLines: 1,
+  //                   overflow: TextOverflow.ellipsis,
+  //                 ),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //         IconButton(
+  //           icon: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
+  //           onPressed: () {},
+  //         ),
+  //         const SizedBox(width: 8),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildBottomNavigationBar() {
     return Container(

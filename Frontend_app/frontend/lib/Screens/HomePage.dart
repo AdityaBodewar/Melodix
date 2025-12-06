@@ -2,7 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/AllSongsPage.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
+import 'package:frontend/SongPlayerPage.dart';
+import 'package:frontend/adminPanel/AddMusicForm.dart';
+import 'package:frontend/handleApi/ApiService%20.dart';
 
 
 
@@ -17,6 +21,17 @@ class _HomePageState extends State<HomePage> {
   int _currentBanner = 0;
   final PageController _bannerController = PageController();
 
+  List<dynamic> topSongs = [];
+  bool isLoading = true;
+
+
+
+  void loadSongs() async {
+    topSongs = await ApiService.fetchAllMusic();
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   // Dynamic data for future updates
 
@@ -44,6 +59,9 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+
+    super.initState();
+    loadSongs();
 
     // Auto-slide each 3 seconds
     Timer.periodic(const Duration(seconds: 3), (timer) {
@@ -87,7 +105,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => ProfilePage()),
+                    MaterialPageRoute(builder: (context) => AddMusicForm()),
                   );
                 },
               ),
@@ -247,7 +265,7 @@ class _HomePageState extends State<HomePage> {
                       height: 130,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(12),
-                        color: Colors.orange.withOpacity(0.3),
+                        color: Colors.blue.withOpacity(0.3),
                       ),
                       child: const Center(
                         child: Icon(Icons.music_note, size: 50, color: Colors.white),
@@ -292,7 +310,15 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               TextButton(
-                onPressed: () {},
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AllSongsPage(songs: topSongs),
+                    ),
+                  );
+                },
+
                 child: const Text(
                   'View All',
                   style: TextStyle(color: Colors.blue),
@@ -307,9 +333,26 @@ class _HomePageState extends State<HomePage> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: topCharts.length,
+            itemCount: topSongs.length,
             itemBuilder: (context, index) {
-              return _buildChartCard(topCharts[index]['title'], topCharts[index]['color']);
+              final song = topSongs[index];
+
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SongPlayerPage(
+                        image: song["Image"],
+                        title: song["Title"],
+                        singer: song["Singer"],
+                        audioUrl: song["Song"], // backend MP3 URL
+                      ),
+                    ),
+                  );
+                },
+                child: _buildSongCard(song),
+              );
             },
           ),
         ),
@@ -317,26 +360,54 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildChartCard(String title, Color color) {
+  // Widget _buildChartCard(String title, Color color) {
+  //   return Container(
+  //     width: 160,
+  //     margin: const EdgeInsets.symmetric(horizontal: 4),
+  //     decoration: BoxDecoration(
+  //       color: color,
+  //       borderRadius: BorderRadius.circular(12),
+  //     ),
+  //     child: Center(
+  //       child: Padding(
+  //         padding: const EdgeInsets.all(16),
+  //         child: Text(
+  //           title,
+  //           style: const TextStyle(
+  //             color: Colors.white,
+  //             fontSize: 18,
+  //             fontWeight: FontWeight.bold,
+  //           ),
+  //           textAlign: TextAlign.center,
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
+
+  Widget _buildSongCard(dynamic song) {
     return Container(
       width: 160,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: color,
         borderRadius: BorderRadius.circular(12),
+        image: DecorationImage(
+          image: NetworkImage(song["Image"]),
+          fit: BoxFit.cover,
+        ),
       ),
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Text(
-            title,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
+      child: Container(
+        alignment: Alignment.bottomCenter,
+        padding: const EdgeInsets.all(8),
+        color: Colors.black.withOpacity(0.4),
+        child: Text(
+          song["Title"],
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
           ),
+          textAlign: TextAlign.center,
         ),
       ),
     );
