@@ -106,7 +106,10 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => AddMusicForm()),
-                  );
+                  ).then((value){
+                    loadSongs();
+
+                  });
                 },
               ),
             ),
@@ -124,6 +127,8 @@ class _HomePageState extends State<HomePage> {
             _buildRecentlyPlayed(),
             const SizedBox(height: 20),
             _buildTopCharts(),
+            const SizedBox(height: 40,),
+            _buildArtistAlbum(),
           ],
         ),
       ),
@@ -410,6 +415,110 @@ class _HomePageState extends State<HomePage> {
           textAlign: TextAlign.center,
         ),
       ),
+    );
+  }
+
+ Widget _buildArtistAlbum() {
+    return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+          Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Artists',
+                  style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white,fontSize: 20,
+                  ),
+                ),
+                TextButton(onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => AllSongsPage(songs: topSongs),
+                    ),
+                  );
+                }, child: const Text(
+                  'View All',
+                  style: TextStyle(color: Colors.blue),
+                ),
+                ),
+
+              ],
+            ),
+          ),
+            const SizedBox(height: 12),
+
+            SizedBox(
+              height: 160,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  itemCount: topSongs.length,
+                   itemBuilder:(context,index){
+
+                  final song = topSongs[index];
+
+                  return InkWell(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SongPlayerPage(
+                            image: song["Image"],
+                            title: song["Title"],
+                            singer: song["Singer"],
+                            audioUrl: song["Song"], // backend MP3 URL
+                          ),
+                        ),
+                      );
+                    },
+                    child: _buildArtistCard(song),
+                  );
+
+              }
+              ),
+            )
+        ],
+
+    );
+ }
+
+  Widget _buildArtistCard(dynamic song) {
+    return Container(
+      width: 120,
+      margin: EdgeInsets.symmetric(horizontal: 8),
+
+      child: Column(
+        children: [
+          // Circle Image
+          ClipOval(
+            child: Image.network(
+              song["Image"],
+              height: 120,
+              width: 120,
+              fit: BoxFit.cover,
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Artist Name
+          Text(
+            song["Singer"],
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+
     );
   }
 }

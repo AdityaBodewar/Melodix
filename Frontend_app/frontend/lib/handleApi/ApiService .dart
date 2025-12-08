@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 class ApiService {
-  static const String url = "http://10.88.17.81:5000/addmusic";
+  static const String url = "http://172.21.245.81:5000/addmusic";
 
   static Future<bool> uploadMusic({
     required String title,
@@ -41,7 +41,7 @@ class ApiService {
 
   // get all music from backend
 
-  static const String getMusicUrl = "http://10.88.17.81:5000/getallmusic";
+  static const String getMusicUrl = "http://172.21.245.81:5000/getallmusic";
 
   static Future<List<dynamic>> fetchAllMusic() async {
     Dio dio = Dio();
