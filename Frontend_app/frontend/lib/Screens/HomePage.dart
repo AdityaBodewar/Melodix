@@ -165,7 +165,7 @@ class _HomePageState extends State<HomePage> {
           _buildDrawerItem(Icons.library_music, 'Jio Tunes'),
           const Divider(),
           _buildDrawerItem(Icons.settings, 'Settings'),
-          _buildDrawerItem(Icons.help, 'About us'),
+          _buildDrawerItem(Icons.info, 'About us'),
         ],
       ),
     );

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/AboutUsPage.dart';
+import 'package:frontend/HelpSupportPage.dart';
 import 'package:frontend/theme_controller.dart';
 
 class Profilepage extends StatefulWidget {
@@ -71,8 +73,19 @@ class _ProfileScreenState extends State<Profilepage> {
               ThemeController.toggleTheme();
             }),
 
-            _buildProfileOption(Icons.help, 'Help & Support', () {}),
-            _buildProfileOption(Icons.info, 'About', () {}),
+            _buildProfileOption(Icons.help, 'Help & Support', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+              );
+
+            }),
+            _buildProfileOption(Icons.info, 'About', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUsPage()),
+              );
+            }),
             _buildProfileOption(Icons.logout, 'Logout', () {}),
           ],
         ),
