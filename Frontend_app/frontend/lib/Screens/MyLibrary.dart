@@ -11,7 +11,6 @@ class Mylibrary extends StatefulWidget {
 }
 
 class _LibraryScreenState extends State<Mylibrary> {
-
   int downloadedCount = 0;
 
   List<Map<String, String>> libraryItems = [
@@ -40,9 +39,14 @@ class _LibraryScreenState extends State<Mylibrary> {
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Scaffold(
       appBar: AppBar(
-        title: const Text('My Library', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text(
+          'My Library',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
@@ -56,7 +60,6 @@ class _LibraryScreenState extends State<Mylibrary> {
           ),
         ],
       ),
-
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: libraryItems.length,
@@ -65,6 +68,7 @@ class _LibraryScreenState extends State<Mylibrary> {
             _getIcon(libraryItems[index]['icon']!),
             libraryItems[index]['title']!,
             libraryItems[index]['subtitle']!,
+            textColor,
           );
         },
       ),
@@ -73,38 +77,48 @@ class _LibraryScreenState extends State<Mylibrary> {
 
   IconData _getIcon(String iconName) {
     switch (iconName) {
-      case 'favorite': return Icons.favorite;
-      case 'playlist_play': return Icons.playlist_play;
-      case 'album': return Icons.album;
-      case 'person': return Icons.person;
-      case 'download': return Icons.download;
-      case 'history': return Icons.history;
-      default: return Icons.music_note;
+      case 'favorite':
+        return Icons.favorite;
+      case 'playlist_play':
+        return Icons.playlist_play;
+      case 'album':
+        return Icons.album;
+      case 'person':
+        return Icons.person;
+      case 'download':
+        return Icons.download;
+      case 'history':
+        return Icons.history;
+      default:
+        return Icons.music_note;
     }
   }
 
-  Widget _buildLibraryItem(IconData icon, String title, String subtitle) {
-    return Card(
-      color: const Color(0xFF2A2A2A),
-      margin: const EdgeInsets.only(bottom: 12),
+  Widget _buildLibraryItem(
+      IconData icon, String title, String subtitle, Color? textColor) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final subtitleColor = isDark ? Colors.grey : Colors.black54;
 
+    return Card(
+      color: isDark ? const Color(0xFF2A2A2A) : Colors.grey[200],
+      margin: const EdgeInsets.only(bottom: 12),
       child: ListTile(
         leading: Icon(icon, color: Colors.blue, size: 30),
-
-        title: Text(title, style: const TextStyle(color: Colors.white, fontSize: 16)),
-
+        title: Text(
+          title,
+          style: TextStyle(color: textColor, fontSize: 16),
+        ),
         subtitle: Text(
           title == "Downloads" ? "$downloadedCount songs" : subtitle,
-          style: const TextStyle(color: Colors.grey, fontSize: 14),
+          style: TextStyle(color: subtitleColor, fontSize: 14),
         ),
-
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-
+        trailing: Icon(Icons.chevron_right, color: subtitleColor),
         onTap: () {
           if (title == "Downloads") {
-            Navigator.push(context, MaterialPageRoute(
-              builder: (context) => const DownloadsPage(),
-            ));
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const DownloadsPage()),
+            );
           }
           if (title == "Albums") {
             Navigator.push(
@@ -112,7 +126,6 @@ class _LibraryScreenState extends State<Mylibrary> {
               MaterialPageRoute(builder: (_) => const AlbumsPage()),
             );
           }
-
         },
       ),
     );

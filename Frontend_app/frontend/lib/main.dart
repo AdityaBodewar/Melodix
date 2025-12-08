@@ -6,8 +6,10 @@ import 'Screens/HomePage.dart';
 import 'Screens/SearchPage.dart';
 import 'Screens/ProfilePage.dart';
 import 'Screens/MyLibrary.dart';
-import 'adminPanel/AddMusicForm.dart';
 import 'main_screen.dart';
+
+// Theme Controller
+import 'theme_controller.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,9 +17,9 @@ void main() {
   // Status Bar Design
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent, // modern transparent bar
-      statusBarIconBrightness: Brightness.light, // white icons
-      systemNavigationBarColor: Color(0xFF121212), // bottom bar dark
+      statusBarColor: Colors.transparent,
+      statusBarIconBrightness: Brightness.light,
+      systemNavigationBarColor: Color(0xFF121212),
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
@@ -30,39 +32,60 @@ class MusicApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Melodix App',
-      debugShowCheckedModeBanner: false,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: ThemeController.themeMode,
+      builder: (context, mode, _) {
+        return MaterialApp(
+          title: 'Melodix App',
+          debugShowCheckedModeBanner: false,
 
-      // ----------- Theme -----------
-      theme: ThemeData(
-        brightness: Brightness.dark,
-        primarySwatch: Colors.deepPurple,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1E1E1E),
-          elevation: 0,
-        ),
-      ),
+          // 🔥 Whole App Theme Controller
+          themeMode: mode,
 
-      home: const MainScreen(),
+          // 🌞 LIGHT THEME
+          theme: ThemeData(
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: Colors.white,
+            primarySwatch: Colors.blue,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Colors.white,
+              elevation: 0,
+              iconTheme: IconThemeData(color: Colors.black),
+              titleTextStyle: TextStyle(
+                color: Colors.black,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
 
-      // ----------- Routing -----------
-      // initialRoute: '/',
-      // routes: {
-      //
-      //   '/home' : (Context) => HomePage(),
-      //   '/search': (context) =>  SearchPage(),
-      //   '/library': (context) =>  MyLibrary(),
-      //   '/profile': (context) =>  ProfilePage(),
-      //
-      // },
+          // 🌙 DARK THEME
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF121212),
+            appBarTheme: const AppBarTheme(
+              backgroundColor: Color(0xFF1E1E1E),
+              elevation: 0,
+              iconTheme: IconThemeData(color: Colors.white),
+              titleTextStyle: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
 
-      routes: {
-        '/home': (context) =>  HomePage(),
-        '/search': (context) =>  Searchpage(),
-        '/library': (context) =>  Mylibrary(),
-        '/profile': (context) =>  Profilepage(),
+          // Starting Screen
+          home: const MainScreen(),
+
+          // App Routes
+          routes: {
+            '/home': (context) => HomePage(),
+            '/search': (context) => Searchpage(),
+            '/library': (context) => Mylibrary(),
+            '/profile': (context) => Profilepage(),
+          },
+        );
       },
     );
   }

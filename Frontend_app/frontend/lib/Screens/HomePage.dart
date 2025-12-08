@@ -1,10 +1,9 @@
-import 'dart:async';
+// only changed parts, full file ready to paste
 
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:frontend/AboutUsPage.dart';
 import 'package:frontend/AllSongsPage.dart';
-import 'package:frontend/Registerpage.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/SongPlayerPage.dart';
@@ -13,23 +12,17 @@ import 'package:frontend/handleApi/ApiService%20.dart';
 import 'package:frontend/adminPanel/adminloginpage.dart';
 import 'package:frontend/main_screen.dart';
 
-
-
 class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
-
-
   int _currentBanner = 0;
   final PageController _bannerController = PageController();
 
   List<dynamic> topSongs = [];
   bool isLoading = true;
-
-
 
   void loadSongs() async {
     topSongs = await ApiService.fetchAllMusic();
@@ -38,14 +31,10 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  // Dynamic data for future updates
-
   List<Map<String, String>> banners = [
     {"image": "assets/images/arijit_img.jpeg"},
     {"image": "assets/images/shreya_img.jpeg"},
     {"image": "assets/images/udit_img.jpeg"},
-
-
   ];
 
   List<Map<String, String>> recentlyPlayed = [
@@ -54,21 +43,11 @@ class _HomePageState extends State<HomePage> {
     {'title': 'Zara Sa', 'artist': 'KK'},
   ];
 
-  List<Map<String, dynamic>> topCharts = [
-    {'title': '1990s Hindi', 'color': Colors.orange},
-    {'title': 'Most Streamed\nLove Songs', 'color': Colors.green},
-    {'title': 'Hindi 1980s', 'color': Colors.purple},
-  ];
-  bool isDarkTheme = true;
-
   @override
   void initState() {
     super.initState();
-
-    super.initState();
     loadSongs();
 
-    // Auto-slide each 3 seconds
     Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_bannerController.hasClients) {
         _currentBanner++;
@@ -84,29 +63,30 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-
+  @override
   Widget build(BuildContext context) {
-    // TODO: implement build
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Music", style: TextStyle(fontWeight: FontWeight.bold)),
-
+        title: const Text("Music", style: TextStyle(fontWeight: FontWeight.bold)),
         leading: Builder(
           builder: (context) => IconButton(
-            icon: Icon(Icons.menu),
-
+            icon: const Icon(Icons.menu),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
-
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) =>const SettingsPage()),
-            );
-
-          }),
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()),
+              );
+            },
+          ),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: CircleAvatar(
@@ -116,10 +96,9 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) =>const AdminLoginPage()),
-                  ).then((value){
+                    MaterialPageRoute(builder: (context) => const AdminLoginPage()),
+                  ).then((value) {
                     loadSongs();
-
                   });
                 },
               ),
@@ -129,37 +108,41 @@ class _HomePageState extends State<HomePage> {
       ),
       drawer: _buildDrawer(),
       body: SingleChildScrollView(
-        padding: EdgeInsets.only(bottom: 140),
+        padding: const EdgeInsets.only(bottom: 140),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             buildBannerSlider(),
             const SizedBox(height: 20),
-            _buildRecentlyPlayed(),
+            _buildRecentlyPlayed(textColor, isDark),
             const SizedBox(height: 20),
-            _buildTopCharts(),
-            const SizedBox(height: 40,),
-            _buildArtistAlbum(),
+            _buildTopCharts(textColor),
+            const SizedBox(height: 40),
+            _buildArtistAlbum(textColor),
           ],
         ),
       ),
-      backgroundColor: isDarkTheme ? const Color(0xFF121212) : Colors.white,
     );
   }
 
+  // Drawer
   Widget _buildDrawer() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Drawer(
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
+          DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Colors.blue, Colors.lightBlue],
+                colors: isDark
+                    ? [Colors.blue, Colors.lightBlue]
+                    : [Colors.blue.shade300, Colors.lightBlueAccent],
               ),
             ),
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -180,100 +163,98 @@ class _HomePageState extends State<HomePage> {
           _buildDrawerItem(Icons.favorite, 'Favorites'),
           _buildDrawerItem(Icons.playlist_play, 'Playlists'),
           _buildDrawerItem(Icons.library_music, 'Jio Tunes'),
-          const Divider(color: Colors.grey),
+          const Divider(),
           _buildDrawerItem(Icons.settings, 'Settings'),
           _buildDrawerItem(Icons.help, 'About us'),
         ],
       ),
     );
   }
-  Widget _buildDrawerItem(IconData icon, String title) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.white70),
-      title: Text(title, style: const TextStyle(color: Colors.white70)),
-      onTap: () {
-        if (title=='Settings'){
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) =>const SettingsPage()),
-          );
 
-        } else if(title == 'Home'){
-          Navigator.pop(context); // drawer close
-          MainScreen.changeTab?.call(0); // 0 = Home
-        } else if(title == 'About us'){
+  Widget _buildDrawerItem(IconData icon, String title) {
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
+    return ListTile(
+      leading: Icon(icon, color: textColor),
+      title: Text(title, style: TextStyle(color: textColor)),
+      onTap: () {
+        if (title == 'Settings') {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) =>const AboutUsPage()),
+            MaterialPageRoute(builder: (context) => const SettingsPage()),
+          );
+        } else if (title == 'Home') {
+          Navigator.pop(context);
+          MainScreen.changeTab?.call(0);
+        } else if (title == 'About us') {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AboutUsPage()),
           );
         }
       },
     );
   }
 
-  Widget buildBannerSlider() {
-    return Column(
-      children: [
-        SizedBox(
-          height: 190,
-          child: PageView.builder(
-            controller: _bannerController,
-            itemCount: banners.length,
-            onPageChanged: (index) {
-              setState(() {
-                _currentBanner = index;
-              });
-            },
-            itemBuilder: (context, index) {
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  image: DecorationImage(
-                    image: AssetImage(banners[index]["image"]!),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-
-        const SizedBox(height: 8),
-
-        /// Page Indicator Dots
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(banners.length, (index) {
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              margin: const EdgeInsets.symmetric(horizontal: 4),
-              height: 6,
-              width: _currentBanner == index ? 18 : 6,
+  // Banner slider same as before...
+  Widget buildBannerSlider() { /* unchanged from your version */ return Column(
+    children: [
+      SizedBox(
+        height: 190,
+        child: PageView.builder(
+          controller: _bannerController,
+          itemCount: banners.length,
+          onPageChanged: (index) {
+            setState(() {
+              _currentBanner = index;
+            });
+          },
+          itemBuilder: (context, index) {
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
               decoration: BoxDecoration(
-                color: _currentBanner == index
-                    ? Colors.white
-                    : Colors.white54,
-                borderRadius: BorderRadius.circular(3),
+                borderRadius: BorderRadius.circular(16),
+                image: DecorationImage(
+                  image: AssetImage(banners[index]["image"]!),
+                  fit: BoxFit.cover,
+                ),
               ),
             );
-          }),
+          },
         ),
-      ],
-    );
+      ),
+      const SizedBox(height: 8),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: List.generate(banners.length, (index) {
+          return AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            height: 6,
+            width: _currentBanner == index ? 18 : 6,
+            decoration: BoxDecoration(
+              color: _currentBanner == index
+                  ? Colors.white
+                  : Colors.white54,
+              borderRadius: BorderRadius.circular(3),
+            ),
+          );
+        }),
+      ),
+    ],
+  );
   }
 
-
-  Widget _buildRecentlyPlayed() {
+  Widget _buildRecentlyPlayed(Color textColor, bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'Recently Played',
             style: TextStyle(
-              color: Colors.white,
+              color: textColor,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
@@ -306,8 +287,8 @@ class _HomePageState extends State<HomePage> {
                     const SizedBox(height: 8),
                     Text(
                       recentlyPlayed[index]['title']!,
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                       ),
@@ -324,7 +305,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildTopCharts() {
+  Widget _buildTopCharts(Color textColor) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -333,10 +314,10 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Top Charts',
                 style: TextStyle(
-                  color: Colors.white,
+                  color: textColor,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -350,7 +331,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 },
-
                 child: const Text(
                   'View All',
                   style: TextStyle(color: Colors.blue),
@@ -368,7 +348,6 @@ class _HomePageState extends State<HomePage> {
             itemCount: topSongs.length,
             itemBuilder: (context, index) {
               final song = topSongs[index];
-
               return InkWell(
                 onTap: () {
                   Navigator.push(
@@ -381,7 +360,6 @@ class _HomePageState extends State<HomePage> {
                     ),
                   );
                 },
-
                 child: _buildSongCard(song),
               );
             },
@@ -390,31 +368,6 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
-
-  // Widget _buildChartCard(String title, Color color) {
-  //   return Container(
-  //     width: 160,
-  //     margin: const EdgeInsets.symmetric(horizontal: 4),
-  //     decoration: BoxDecoration(
-  //       color: color,
-  //       borderRadius: BorderRadius.circular(12),
-  //     ),
-  //     child: Center(
-  //       child: Padding(
-  //         padding: const EdgeInsets.all(16),
-  //         child: Text(
-  //           title,
-  //           style: const TextStyle(
-  //             color: Colors.white,
-  //             fontSize: 18,
-  //             fontWeight: FontWeight.bold,
-  //           ),
-  //           textAlign: TextAlign.center,
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _buildSongCard(dynamic song) {
     return Container(
@@ -444,81 +397,77 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
- Widget _buildArtistAlbum() {
+  Widget _buildArtistAlbum(Color textColor) {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-          Padding(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Artists',
-                  style: TextStyle(fontWeight: FontWeight.bold,color: Colors.white,fontSize: 20,
-                  ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Artists',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                  fontSize: 20,
                 ),
-                TextButton(onPressed: () {
+              ),
+              TextButton(
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => AllSongsPage(songs: topSongs),
                     ),
                   );
-                }, child: const Text(
+                },
+                child: const Text(
                   'View All',
                   style: TextStyle(color: Colors.blue),
                 ),
-                ),
-
-              ],
-            ),
-          ),
-            const SizedBox(height: 12),
-
-            SizedBox(
-              height: 160,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  itemCount: topSongs.length,
-                   itemBuilder:(context,index){
-
-                  final song = topSongs[index];
-
-                  return InkWell(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => SongPlayerPage(
-                            songs: topSongs,
-                            currentIndex: index,
-                          ),
-                        ),
-                      );
-                    },
-
-                    child: _buildArtistCard(song),
-                  );
-
-              }
               ),
-            )
-        ],
-
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 160,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            itemCount: topSongs.length,
+            itemBuilder: (context, index) {
+              final song = topSongs[index];
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SongPlayerPage(
+                        songs: topSongs,
+                        currentIndex: index,
+                      ),
+                    ),
+                  );
+                },
+                child: _buildArtistCard(song),
+              );
+            },
+          ),
+        )
+      ],
     );
- }
+  }
 
   Widget _buildArtistCard(dynamic song) {
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
     return Container(
       width: 120,
-      margin: EdgeInsets.symmetric(horizontal: 8),
-
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         children: [
-          // Circle Image
           ClipOval(
             child: Image.network(
               song["Image"],
@@ -528,12 +477,10 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: 8),
-
-          // Artist Name
           Text(
             song["Singer"],
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: textColor,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -543,7 +490,6 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-
     );
   }
 }

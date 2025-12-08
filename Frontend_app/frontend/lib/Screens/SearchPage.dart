@@ -12,6 +12,8 @@ class _SearchScreenState extends State<Searchpage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Search', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -32,27 +34,41 @@ class _SearchScreenState extends State<Searchpage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            TextField(
-              controller: _searchController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'Search for songs, artists, albums...',
-                hintStyle: const TextStyle(color: Colors.grey),
-                prefixIcon: const Icon(Icons.search, color: Colors.grey),
-                filled: true,
-                fillColor: const Color(0xFF2A2A2A),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(30),
-                  borderSide: BorderSide.none,
+            // Search Bar
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.grey[900] : Colors.grey[300],
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: TextField(
+                controller: _searchController,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                decoration: InputDecoration(
+                  icon: Icon(Icons.search,
+                      color: isDark ? Colors.white70 : Colors.black54),
+                  border: InputBorder.none,
+                  hintText: 'Search for songs, artists, albums...',
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black38,
+                  ),
                 ),
               ),
             ),
+
             const SizedBox(height: 20),
+
+            // Center text
             Expanded(
               child: Center(
                 child: Text(
                   'Search for your favorite music',
-                  style: TextStyle(color: Colors.grey[600], fontSize: 16),
+                  style: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black54,
+                    fontSize: 16,
+                  ),
                 ),
               ),
             ),
