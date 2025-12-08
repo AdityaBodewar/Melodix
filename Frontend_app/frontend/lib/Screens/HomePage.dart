@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:frontend/AllSongsPage.dart';
+import 'package:frontend/Registerpage.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:frontend/SongPlayerPage.dart';
 import 'package:frontend/adminPanel/AddMusicForm.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
+import 'package:frontend/adminPanel/adminloginpage.dart';
 
 
 
@@ -105,7 +107,7 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AddMusicForm()),
+                    MaterialPageRoute(builder: (context) =>const AdminLoginPage()),
                   ).then((value){
                     loadSongs();
 
