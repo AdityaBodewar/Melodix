@@ -2,13 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/AboutUsPage.dart';
 import 'package:frontend/AllSongsPage.dart';
 import 'package:frontend/Registerpage.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
+import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/SongPlayerPage.dart';
 import 'package:frontend/adminPanel/AddMusicForm.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
 import 'package:frontend/adminPanel/adminloginpage.dart';
+import 'package:frontend/main_screen.dart';
 
 
 
@@ -97,7 +100,13 @@ class _HomePageState extends State<HomePage> {
         ),
 
         actions: [
-          IconButton(icon: const Icon(Icons.settings), onPressed: () {}),
+          IconButton(icon: const Icon(Icons.settings), onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) =>const SettingsPage()),
+            );
+
+          }),
           Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: CircleAvatar(
@@ -173,7 +182,7 @@ class _HomePageState extends State<HomePage> {
           _buildDrawerItem(Icons.library_music, 'Jio Tunes'),
           const Divider(color: Colors.grey),
           _buildDrawerItem(Icons.settings, 'Settings'),
-          _buildDrawerItem(Icons.help, 'Help & Feedback'),
+          _buildDrawerItem(Icons.help, 'About us'),
         ],
       ),
     );
@@ -182,7 +191,23 @@ class _HomePageState extends State<HomePage> {
     return ListTile(
       leading: Icon(icon, color: Colors.white70),
       title: Text(title, style: const TextStyle(color: Colors.white70)),
-      onTap: () {},
+      onTap: () {
+        if (title=='Settings'){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) =>const SettingsPage()),
+          );
+
+        } else if(title == 'Home'){
+          Navigator.pop(context); // drawer close
+          MainScreen.changeTab?.call(0); // 0 = Home
+        } else if(title == 'About us'){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) =>const AboutUsPage()),
+          );
+        }
+      },
     );
   }
 
