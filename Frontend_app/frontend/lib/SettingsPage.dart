@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:frontend/theme_controller.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -13,12 +15,15 @@ class _SettingsPageState extends State<SettingsPage> {
   double volume = 0.5;
   String themeMode = "system"; // light / dark / system
 
+  final AudioPlayer globalPlayer = AudioPlayer(); // 🔥 global volume control
+
   @override
   void initState() {
     super.initState();
     loadSettings();
   }
 
+  // LOAD SAVED SETTINGS
   Future<void> loadSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -27,8 +32,11 @@ class _SettingsPageState extends State<SettingsPage> {
       volume = prefs.getDouble("volume") ?? 0.5;
       themeMode = prefs.getString("theme") ?? "system";
     });
+
+    globalPlayer.setVolume(volume); // APPLY SAVED VOLUME
   }
 
+  // SAVE SETTINGS
   Future<void> saveSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -65,6 +73,7 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               children: [
 
+                // LIGHT THEME
                 RadioListTile(
                   activeColor: Colors.blue,
                   title: const Text("Light Theme",
@@ -73,10 +82,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   groupValue: themeMode,
                   onChanged: (value) {
                     setState(() => themeMode = value!);
+                    ThemeController.setTheme(ThemeMode.light); // APPLY
                     saveSettings();
                   },
                 ),
 
+                // DARK THEME
                 RadioListTile(
                   activeColor: Colors.blue,
                   title: const Text("Dark Theme",
@@ -85,10 +96,12 @@ class _SettingsPageState extends State<SettingsPage> {
                   groupValue: themeMode,
                   onChanged: (value) {
                     setState(() => themeMode = value!);
+                    ThemeController.setTheme(ThemeMode.dark); // APPLY
                     saveSettings();
                   },
                 ),
 
+                // FOLLOW SYSTEM
                 RadioListTile(
                   activeColor: Colors.blue,
                   title: const Text("Follow System",
@@ -97,17 +110,17 @@ class _SettingsPageState extends State<SettingsPage> {
                   groupValue: themeMode,
                   onChanged: (value) {
                     setState(() => themeMode = value!);
+                    ThemeController.setTheme(ThemeMode.system); // APPLY
                     saveSettings();
                   },
                 ),
-
               ],
             ),
           ),
 
           const SizedBox(height: 20),
 
-          // 🔵 VOLUME CONTROL SECTION ------------------
+          // 🔵 VOLUME CONTROL ------------------
           const Text("Playback Volume",
               style: TextStyle(color: Colors.white70, fontSize: 16)),
           const SizedBox(height: 6),
@@ -127,6 +140,8 @@ class _SettingsPageState extends State<SettingsPage> {
                   activeColor: Colors.blue,
                   onChanged: (value) {
                     setState(() => volume = value);
+
+                    globalPlayer.setVolume(volume); // 🔥 APPLY VOLUME
                     saveSettings();
                   },
                 ),
@@ -141,7 +156,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 20),
 
-          // 🔵 NOTIFICATIONS SECTION ---------------------
+          // 🔵 NOTIFICATIONS ---------------------
           const Text("Notifications",
               style: TextStyle(color: Colors.white70, fontSize: 16)),
           const SizedBox(height: 6),

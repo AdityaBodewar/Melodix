@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/AboutUsPage.dart';
+import 'package:frontend/HelpSupportPage.dart';
+import 'package:frontend/theme_controller.dart';
 
 class Profilepage extends StatefulWidget {
   const Profilepage({Key? key}) : super(key: key);
@@ -10,10 +13,11 @@ class Profilepage extends StatefulWidget {
 class _ProfileScreenState extends State<Profilepage> {
   String name = 'Music Lover';
   String email = 'musiclover@example.com';
-  bool isDarkTheme = true;
 
   @override
   Widget build(BuildContext context) {
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -26,61 +30,82 @@ class _ProfileScreenState extends State<Profilepage> {
         child: Column(
           children: [
             const SizedBox(height: 30),
+
+            // Avatar
             CircleAvatar(
               radius: 60,
               backgroundColor: Colors.blue,
               child: const Icon(Icons.person, size: 60, color: Colors.white),
             ),
+
             const SizedBox(height: 16),
+
+            // Name
             Text(
               name,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: textColor,
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
               ),
             ),
+
             const SizedBox(height: 8),
+
+            // Email
             Text(
               email,
-              style: TextStyle(color: Colors.grey[400], fontSize: 14),
+              style: TextStyle(
+                color: Theme.of(context).hintColor,
+                fontSize: 14,
+              ),
             ),
+
             const SizedBox(height: 30),
-            _buildProfileOption(Icons.edit, 'Edit Profile', () {
-              _showEditDialog();
-            }),
+
+            _buildProfileOption(Icons.edit, 'Edit Profile', _showEditDialog),
             _buildProfileOption(Icons.notifications, 'Notifications', () {}),
             _buildProfileOption(Icons.privacy_tip, 'Privacy', () {}),
             _buildProfileOption(Icons.language, 'Language', () {}),
+
+            // Theme toggle
             _buildProfileOption(Icons.dark_mode, 'Theme', () {
-              setState(() {
-                isDarkTheme = !isDarkTheme;
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    isDarkTheme ? 'Dark Theme Enabled' : 'Light Theme Enabled',
-                  ),
-                ),
+              ThemeController.toggleTheme();
+            }),
+
+            _buildProfileOption(Icons.help, 'Help & Support', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+              );
+
+            }),
+            _buildProfileOption(Icons.info, 'About', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AboutUsPage()),
               );
             }),
-            _buildProfileOption(Icons.help, 'Help & Support', () {}),
-            _buildProfileOption(Icons.info, 'About', () {}),
-            _buildProfileOption(Icons.logout, 'Logout', () {
-              // Add logout functionality
-            }),
+            _buildProfileOption(Icons.logout, 'Logout', () {}),
           ],
         ),
       ),
-      backgroundColor: isDarkTheme ? const Color(0xFF121212) : Colors.white,
     );
   }
 
-  Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
+  Widget _buildProfileOption(
+      IconData icon, String title, VoidCallback onTap) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+    final subtitleColor = isDark ? Colors.grey : Colors.black54;
+
     return ListTile(
       leading: Icon(icon, color: Colors.blue),
-      title: Text(title, style: TextStyle(color: isDarkTheme ? Colors.white : Colors.black)),
-      trailing: Icon(Icons.chevron_right, color: isDarkTheme ? Colors.grey : Colors.black54),
+      title: Text(
+        title,
+        style: TextStyle(color: textColor, fontSize: 16),
+      ),
+      trailing: Icon(Icons.chevron_right, color: subtitleColor),
       onTap: onTap,
     );
   }
@@ -109,9 +134,7 @@ class _ProfileScreenState extends State<Profilepage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Close dialog
-              },
+              onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
             ElevatedButton(
