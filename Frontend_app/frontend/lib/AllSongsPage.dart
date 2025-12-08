@@ -28,10 +28,8 @@ class AllSongsPage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (_) => SongPlayerPage(
-                      image: song["Image"],
-                      title: song["Title"],
-                      singer: song["Singer"],
-                      audioUrl: song["Song"],
+                      songs: songs,
+                      currentIndex: index,
                     ),
                   ),
                 );
@@ -59,6 +57,7 @@ class AllSongsPage extends StatelessWidget {
               ),
             );
           },
+
         ),
 
     );
