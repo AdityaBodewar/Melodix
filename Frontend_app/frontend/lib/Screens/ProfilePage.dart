@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
 import 'package:frontend/HelpSupportPage.dart';
+import 'package:frontend/LanguagePage.dart';
+import 'package:frontend/PrivacyPage.dart';
+import 'package:frontend/SettingsPage.dart';
+import 'package:frontend/TermsPage.dart';
 import 'package:frontend/theme_controller.dart';
 
 class Profilepage extends StatefulWidget {
@@ -26,8 +30,13 @@ class _ProfileScreenState extends State<Profilepage> {
         ),
         centerTitle: true,
       ),
+
       body: SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 120), // ⭐ ADDED: space for bottom bar
+
         child: Column(
+          mainAxisSize: MainAxisSize.min, // IMPORTANT for Scroll
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 30),
 
@@ -63,12 +72,30 @@ class _ProfileScreenState extends State<Profilepage> {
 
             const SizedBox(height: 30),
 
+            // ⚙ Options
             _buildProfileOption(Icons.edit, 'Edit Profile', _showEditDialog),
-            _buildProfileOption(Icons.notifications, 'Notifications', () {}),
-            _buildProfileOption(Icons.privacy_tip, 'Privacy', () {}),
-            _buildProfileOption(Icons.language, 'Language', () {}),
 
-            // Theme toggle
+            _buildProfileOption(Icons.notifications, 'Notifications', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SettingsPage()),
+              );
+            }),
+
+            _buildProfileOption(Icons.privacy_tip, 'Privacy', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const PrivacyPage()),
+              );
+            }),
+
+            _buildProfileOption(Icons.language, 'Language', () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LanguagePage()),
+              );
+            }),
+
             _buildProfileOption(Icons.dark_mode, 'Theme', () {
               ThemeController.toggleTheme();
             }),
@@ -78,23 +105,33 @@ class _ProfileScreenState extends State<Profilepage> {
                 context,
                 MaterialPageRoute(builder: (_) => const HelpSupportPage()),
               );
-
             }),
+
             _buildProfileOption(Icons.info, 'About', () {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const AboutUsPage()),
               );
             }),
+
+            _buildProfileOption(Icons.policy, "Terms & Condition", () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const TermsPage()),
+              );
+            }),
+
             _buildProfileOption(Icons.logout, 'Logout', () {}),
+
+            const SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildProfileOption(
-      IconData icon, String title, VoidCallback onTap) {
+  // ------------------------ Profile Tile Builder ------------------------
+  Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
     final subtitleColor = isDark ? Colors.grey : Colors.black54;
@@ -110,6 +147,7 @@ class _ProfileScreenState extends State<Profilepage> {
     );
   }
 
+  // ------------------------ Edit Profile Dialog ------------------------
   void _showEditDialog() {
     TextEditingController nameController = TextEditingController(text: name);
     TextEditingController emailController = TextEditingController(text: email);
