@@ -19,6 +19,12 @@ dependencies:
   just_audio: ^0.9.40
   audio_session: ^0.1.15
   audioplayers: ^5.2.1
+  # to read file storage
+  path_provider: ^2.1.2
+  shared_preferences: ^2.2.2
+
+
+
 
 
   cupertino_icons: ^1.0.8

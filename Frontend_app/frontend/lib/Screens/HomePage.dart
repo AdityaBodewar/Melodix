@@ -349,15 +349,14 @@ class _HomePageState extends State<HomePage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => SongPlayerPage(
-                        image: song["Image"],
-                        title: song["Title"],
-                        singer: song["Singer"],
-                        audioUrl: song["Song"], // backend MP3 URL
+                      builder: (_) => SongPlayerPage(
+                        songs: topSongs,
+                        currentIndex: index,
                       ),
                     ),
                   );
                 },
+
                 child: _buildSongCard(song),
               );
             },
@@ -468,15 +467,14 @@ class _HomePageState extends State<HomePage> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SongPlayerPage(
-                            image: song["Image"],
-                            title: song["Title"],
-                            singer: song["Singer"],
-                            audioUrl: song["Song"], // backend MP3 URL
+                          builder: (_) => SongPlayerPage(
+                            songs: topSongs,
+                            currentIndex: index,
                           ),
                         ),
                       );
                     },
+
                     child: _buildArtistCard(song),
                   );
 
