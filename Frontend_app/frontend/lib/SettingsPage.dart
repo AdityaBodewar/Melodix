@@ -13,9 +13,9 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool notificationsEnabled = true;
   double volume = 0.5;
-  String themeMode = "system"; // light / dark / system
+  String themeMode = "system";
 
-  final AudioPlayer globalPlayer = AudioPlayer(); // 🔥 global volume control
+  final AudioPlayer globalPlayer = AudioPlayer(); // for controlling volume
 
   @override
   void initState() {
@@ -23,7 +23,6 @@ class _SettingsPageState extends State<SettingsPage> {
     loadSettings();
   }
 
-  // LOAD SAVED SETTINGS
   Future<void> loadSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -33,13 +32,11 @@ class _SettingsPageState extends State<SettingsPage> {
       themeMode = prefs.getString("theme") ?? "system";
     });
 
-    globalPlayer.setVolume(volume); // APPLY SAVED VOLUME
+    globalPlayer.setVolume(volume);
   }
 
-  // SAVE SETTINGS
   Future<void> saveSettings() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-
     prefs.setBool("notifications", notificationsEnabled);
     prefs.setDouble("volume", volume);
     prefs.setString("theme", themeMode);
@@ -47,70 +44,75 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    // Fetch dynamic colors from theme mode
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final cardColor = Theme.of(context).cardColor;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+    final subtitleColor = Theme.of(context).hintColor;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: bgColor,
+
       appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text("Settings"),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+        title: Text("Settings", style: TextStyle(color: textColor)),
+        iconTheme: IconThemeData(color: textColor),
       ),
 
       body: ListView(
         padding: const EdgeInsets.all(16),
 
         children: [
-          // 🔵 THEME SECTION --------------------
-          const Text("Theme",
-              style: TextStyle(color: Colors.white70, fontSize: 16)),
+          // THEME SECTION
+          Text("Theme",
+              style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
 
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              color: cardColor,
               borderRadius: BorderRadius.circular(12),
             ),
 
             child: Column(
               children: [
 
-                // LIGHT THEME
                 RadioListTile(
                   activeColor: Colors.blue,
-                  title: const Text("Light Theme",
-                      style: TextStyle(color: Colors.white)),
+                  title: Text("Light Theme",
+                      style: TextStyle(color: textColor)),
                   value: "light",
                   groupValue: themeMode,
                   onChanged: (value) {
                     setState(() => themeMode = value!);
-                    ThemeController.setTheme(ThemeMode.light); // APPLY
+                    ThemeController.setTheme(ThemeMode.light);
                     saveSettings();
                   },
                 ),
 
-                // DARK THEME
                 RadioListTile(
                   activeColor: Colors.blue,
-                  title: const Text("Dark Theme",
-                      style: TextStyle(color: Colors.white)),
+                  title: Text("Dark Theme",
+                      style: TextStyle(color: textColor)),
                   value: "dark",
                   groupValue: themeMode,
                   onChanged: (value) {
                     setState(() => themeMode = value!);
-                    ThemeController.setTheme(ThemeMode.dark); // APPLY
+                    ThemeController.setTheme(ThemeMode.dark);
                     saveSettings();
                   },
                 ),
 
-                // FOLLOW SYSTEM
                 RadioListTile(
                   activeColor: Colors.blue,
-                  title: const Text("Follow System",
-                      style: TextStyle(color: Colors.white)),
+                  title: Text("Follow System",
+                      style: TextStyle(color: textColor)),
                   value: "system",
                   groupValue: themeMode,
                   onChanged: (value) {
                     setState(() => themeMode = value!);
-                    ThemeController.setTheme(ThemeMode.system); // APPLY
+                    ThemeController.setTheme(ThemeMode.system);
                     saveSettings();
                   },
                 ),
@@ -120,15 +122,15 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 20),
 
-          // 🔵 VOLUME CONTROL ------------------
-          const Text("Playback Volume",
-              style: TextStyle(color: Colors.white70, fontSize: 16)),
+          // VOLUME CONTROL
+          Text("Playback Volume",
+              style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
 
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              color: cardColor,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
@@ -140,15 +142,14 @@ class _SettingsPageState extends State<SettingsPage> {
                   activeColor: Colors.blue,
                   onChanged: (value) {
                     setState(() => volume = value);
-
-                    globalPlayer.setVolume(volume); // 🔥 APPLY VOLUME
+                    globalPlayer.setVolume(volume);
                     saveSettings();
                   },
                 ),
 
                 Text(
                   "Volume: ${(volume * 100).toInt()}%",
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: textColor),
                 )
               ],
             ),
@@ -156,22 +157,22 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 20),
 
-          // 🔵 NOTIFICATIONS ---------------------
-          const Text("Notifications",
-              style: TextStyle(color: Colors.white70, fontSize: 16)),
+          // NOTIFICATIONS
+          Text("Notifications",
+              style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
 
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: const Color(0xFF1E1E1E),
+              color: cardColor,
               borderRadius: BorderRadius.circular(12),
             ),
 
             child: SwitchListTile(
               activeColor: Colors.blue,
-              title: const Text("App Notifications",
-                  style: TextStyle(color: Colors.white)),
+              title: Text("App Notifications",
+                  style: TextStyle(color: textColor)),
               value: notificationsEnabled,
               onChanged: (value) {
                 setState(() => notificationsEnabled = value);
@@ -179,7 +180,6 @@ class _SettingsPageState extends State<SettingsPage> {
               },
             ),
           ),
-
         ],
       ),
     );

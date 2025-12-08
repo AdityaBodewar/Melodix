@@ -56,16 +56,24 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    // ⭐ THEME COLORS
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = Theme.of(context).scaffoldBackgroundColor;
+    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+    final subtitleColor = isDark ? Colors.white70 : Colors.black54;
+
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: bgColor,
 
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         leading: IconButton(
-          icon: const Icon(Icons.keyboard_arrow_down, color: Colors.white, size: 32),
+          icon: Icon(Icons.keyboard_arrow_down,
+              color: textColor, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text("Now Playing", style: TextStyle(color: Colors.white)),
+        title: Text("Now Playing",
+            style: TextStyle(color: textColor)),
         centerTitle: true,
       ),
 
@@ -90,8 +98,8 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
           // TITLE
           Text(
             widget.title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: textColor,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),
@@ -100,7 +108,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
           // SINGER
           Text(
             widget.singer,
-            style: const TextStyle(color: Colors.white70, fontSize: 16),
+            style: TextStyle(color: subtitleColor, fontSize: 16),
           ),
 
           const SizedBox(height: 20),
@@ -108,16 +116,18 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
           // SEEK BAR
           Slider(
             value: _position.inSeconds.toDouble(),
-            max: _duration.inSeconds.toDouble(),
+            max: (_duration.inSeconds == 0 ? 1 : _duration.inSeconds).toDouble(),
+            activeColor: Colors.blue,
             onChanged: (value) async {
               final pos = Duration(seconds: value.toInt());
               await _player.seek(pos);
             },
           ),
 
+          // TIME INDICATORS
           Text(
             "${formatTime(_position)} / ${formatTime(_duration)}",
-            style: const TextStyle(color: Colors.white70),
+            style: TextStyle(color: subtitleColor),
           ),
 
           const SizedBox(height: 30),
@@ -125,7 +135,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
           // PLAY PAUSE BUTTON
           IconButton(
             iconSize: 60,
-            color: Colors.white,
+            color: textColor,
             icon: Icon(isPlaying ? Icons.pause_circle : Icons.play_circle),
             onPressed: () async {
               if (isPlaying) {
