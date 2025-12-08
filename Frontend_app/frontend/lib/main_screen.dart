@@ -7,6 +7,8 @@ import 'package:frontend/Screens/SearchPage.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
+  static Function(int)? changeTab; // ADD THIS
+
 
   @override
   State<MainScreen> createState() => _MainScreenState();
@@ -14,6 +16,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+
 
   final List<Widget> _screens = [
      HomePage(),
@@ -24,6 +27,19 @@ class _MainScreenState extends State<MainScreen> {
 
 
   ];
+
+  @override
+  void initState() {
+    super.initState();
+
+    MainScreen.changeTab = (int index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    };
+  }
+
+
 
 
 
