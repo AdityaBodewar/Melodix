@@ -11,7 +11,7 @@ import 'main_screen.dart';
 // Theme Controller
 import 'theme_controller.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Status Bar Design
@@ -23,6 +23,9 @@ void main() {
       systemNavigationBarIconBrightness: Brightness.light,
     ),
   );
+
+  await ThemeController.loadTheme();
+
 
   runApp(const MusicApp());
 }
