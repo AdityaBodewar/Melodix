@@ -13,14 +13,23 @@ class SettingsPage extends StatefulWidget {
 class _SettingsPageState extends State<SettingsPage> {
   bool notificationsEnabled = true;
   double volume = 0.5;
-  String themeMode = "system";
 
-  final AudioPlayer globalPlayer = AudioPlayer(); // for controlling volume
+  //  THEME always synced with ThemeController
+  String themeMode = ThemeController.themeMode.value.name;
+
+  final AudioPlayer globalPlayer = AudioPlayer(); // For controlling global volume
 
   @override
   void initState() {
     super.initState();
     loadSettings();
+
+    // 🔥 Listen to theme changes everywhere
+    ThemeController.themeMode.addListener(() {
+      setState(() {
+        themeMode = ThemeController.themeMode.value.name;
+      });
+    });
   }
 
   Future<void> loadSettings() async {
@@ -29,7 +38,9 @@ class _SettingsPageState extends State<SettingsPage> {
     setState(() {
       notificationsEnabled = prefs.getBool("notifications") ?? true;
       volume = prefs.getDouble("volume") ?? 0.5;
-      themeMode = prefs.getString("theme") ?? "system";
+
+      // 🔥 Always match global theme
+      themeMode = ThemeController.themeMode.value.name;
     });
 
     globalPlayer.setVolume(volume);
@@ -39,12 +50,10 @@ class _SettingsPageState extends State<SettingsPage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool("notifications", notificationsEnabled);
     prefs.setDouble("volume", volume);
-    prefs.setString("theme", themeMode);
   }
 
   @override
   Widget build(BuildContext context) {
-    // Fetch dynamic colors from theme mode
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final cardColor = Theme.of(context).cardColor;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
@@ -52,7 +61,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
     return Scaffold(
       backgroundColor: bgColor,
-
       appBar: AppBar(
         backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
         title: Text("Settings", style: TextStyle(color: textColor)),
@@ -63,9 +71,9 @@ class _SettingsPageState extends State<SettingsPage> {
         padding: const EdgeInsets.all(16),
 
         children: [
-          // THEME SECTION
-          Text("Theme",
-              style: TextStyle(color: subtitleColor, fontSize: 16)),
+
+          // ---------------- THEME SECTION ----------------
+          Text("Theme", style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
 
           Container(
@@ -78,10 +86,10 @@ class _SettingsPageState extends State<SettingsPage> {
             child: Column(
               children: [
 
+                // LIGHT MODE
                 RadioListTile(
                   activeColor: Colors.blue,
-                  title: Text("Light Theme",
-                      style: TextStyle(color: textColor)),
+                  title: Text("Light Theme", style: TextStyle(color: textColor)),
                   value: "light",
                   groupValue: themeMode,
                   onChanged: (value) {
@@ -91,10 +99,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
 
+                // DARK MODE
                 RadioListTile(
                   activeColor: Colors.blue,
-                  title: Text("Dark Theme",
-                      style: TextStyle(color: textColor)),
+                  title: Text("Dark Theme", style: TextStyle(color: textColor)),
                   value: "dark",
                   groupValue: themeMode,
                   onChanged: (value) {
@@ -104,10 +112,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   },
                 ),
 
+                // SYSTEM MODE
                 RadioListTile(
                   activeColor: Colors.blue,
-                  title: Text("Follow System",
-                      style: TextStyle(color: textColor)),
+                  title: Text("Follow System", style: TextStyle(color: textColor)),
                   value: "system",
                   groupValue: themeMode,
                   onChanged: (value) {
@@ -122,7 +130,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 20),
 
-          // VOLUME CONTROL
+          // ---------------- VOLUME SECTION ----------------
           Text("Playback Volume",
               style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
@@ -133,6 +141,7 @@ class _SettingsPageState extends State<SettingsPage> {
               color: cardColor,
               borderRadius: BorderRadius.circular(12),
             ),
+
             child: Column(
               children: [
                 Slider(
@@ -157,7 +166,7 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 20),
 
-          // NOTIFICATIONS
+          // ---------------- NOTIFICATION SECTION ----------------
           Text("Notifications",
               style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
