@@ -3,6 +3,10 @@ import 'package:frontend/Screens/HomePage.dart';
 import 'package:frontend/Screens/MyLibrary.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:frontend/Screens/SearchPage.dart';
+import 'package:frontend/MusicController.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:frontend/SongPlayerPage.dart';
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -30,6 +34,13 @@ class _MainScreenState extends State<MainScreen> {
         _currentIndex = index;
       });
     };
+
+    // 🔥 IMPORTANT: Listen to MusicController updates
+    MusicController.player.onPlayerStateChanged.listen((state) {
+      setState(() {
+        MusicController.isPlaying = state == PlayerState.playing;
+      });
+    });
   }
 
   @override
@@ -38,7 +49,17 @@ class _MainScreenState extends State<MainScreen> {
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          _screens[_currentIndex],
+          _screens[_currentIndex],   //  MAIN SCREEN at bottom
+
+          //  NOW PLAYING BAR at bottom ABOVE NAV BAR
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 60,  // bottom nav ki height + margin
+            child: _buildNowPlayingBar(),
+          ),
+
+          //  BOTTOM NAV BAR at bottom-most
           Positioned(
             left: 0,
             right: 0,
@@ -47,6 +68,8 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
+
+
     );
   }
 
@@ -89,4 +112,101 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+
+  Widget _buildNowPlayingBar() {
+    // ❗ hide only when no song selected yet
+    if (MusicController.title == null) {
+      return SizedBox();
+    }
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : Colors.black;
+
+    return GestureDetector(
+      onTap: () {
+        // open player page again
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SongPlayerPage(
+              songs: MusicController.currentList ?? [],
+              currentIndex: MusicController.currentIndex ?? 0,
+            ),
+          ),
+        );
+      },
+
+      child: Container(
+        height: 65,
+        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            // COVER IMAGE
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: Image.network(
+                MusicController.image!,
+                width: 55,
+                height: 55,
+                fit: BoxFit.cover,
+              ),
+            ),
+
+            const SizedBox(width: 10),
+
+            // TITLE + ARTIST
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    MusicController.title ?? "",
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    MusicController.singer ?? "",
+                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+
+            // PLAY PAUSE
+            IconButton(
+              icon: Icon(
+                MusicController.isPlaying
+                    ? Icons.pause
+                    : Icons.play_arrow,
+                color: Colors.white,
+                size: 30,
+              ),
+              onPressed: () {
+                MusicController.togglePlayPause();
+                setState(() {});
+              },
+            ),
+
+            const SizedBox(width: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
 }
