@@ -59,4 +59,28 @@ class ApiService {
     }
   }
 
+  static const String searchUrl = "http://172.21.245.81:5000/searchmusic";
+
+  static Future<List<dynamic>> searchMusic(String query) async{
+    Dio dio = Dio();
+    try {
+      Response response = await dio.post(
+        searchUrl,
+        data: {
+          "Title": query,  // backend ko Title chahiye
+        },
+      );
+
+      if (response.statusCode == 200) {
+        return response.data["data"]; // matched songs list
+      } else {
+        return [];
+      }
+  }catch (e) {
+      print("Error searching songs: $e");
+      return [];
+    }
+  }
+
+
 }
