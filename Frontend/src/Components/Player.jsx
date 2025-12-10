@@ -1,182 +1,145 @@
 import React, { useEffect, useRef, useState } from "react";
 
-const Player = ({ songurl }) => {
+const Player = ({ song }) => {
   const audioRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const isSeekingRef = useRef(false);
 
-  // Play the song when songurl changes
+  // Play the song when song changes
   useEffect(() => {
-    if (audioRef.current && songurl) {
+    if (audioRef.current && song?.Song) {
       audioRef.current.pause();
+      audioRef.current.src = song.Song;
       audioRef.current.load();
-      audioRef.current.play().catch(err => {
-        console.error("Playback error:", err);
-        setIsPlaying(false);
-      });
-      setIsPlaying(true);
+      audioRef.current
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false));
     }
-  }, [songurl]);
+  }, [song]);
 
-  // Setup event listeners (only once)
+  // Audio event listeners
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const updateTime = () => {
-      if (!isSeekingRef.current) {
-        setCurrentTime(audio.currentTime);
-      }
+    const handleTimeUpdate = () => {
+      if (!isSeekingRef.current) setCurrentTime(audio.currentTime);
     };
 
-    const updateDuration = () => {
-      setDuration(audio.duration || 0);
-    };
+    const handleLoadedMetadata = () => setDuration(audio.duration || 0);
 
     const handleEnded = () => {
       setIsPlaying(false);
       setCurrentTime(0);
     };
 
-    const handlePlay = () => {
-      setIsPlaying(true);
-    };
-
-    const handlePause = () => {
-      setIsPlaying(false);
-    };
-
-    audio.addEventListener('timeupdate', updateTime);
-    audio.addEventListener('loadedmetadata', updateDuration);
-    audio.addEventListener('durationchange', updateDuration);
-    audio.addEventListener('ended', handleEnded);
-    audio.addEventListener('play', handlePlay);
-    audio.addEventListener('pause', handlePause);
+    audio.addEventListener("timeupdate", handleTimeUpdate);
+    audio.addEventListener("loadedmetadata", handleLoadedMetadata);
+    audio.addEventListener("ended", handleEnded);
 
     return () => {
-      audio.removeEventListener('timeupdate', updateTime);
-      audio.removeEventListener('loadedmetadata', updateDuration);
-      audio.removeEventListener('durationchange', updateDuration);
-      audio.removeEventListener('ended', handleEnded);
-      audio.removeEventListener('play', handlePlay);
-      audio.removeEventListener('pause', handlePause);
+      audio.removeEventListener("timeupdate", handleTimeUpdate);
+      audio.removeEventListener("loadedmetadata", handleLoadedMetadata);
+      audio.removeEventListener("ended", handleEnded);
     };
-  }, []); // Empty dependency array - only runs once
+  }, []);
 
-  // Play / Pause toggle
+  // Play/pause toggle
   const togglePlay = () => {
-    if (audioRef.current) {
-      if (!isPlaying) {
-        audioRef.current.play().catch(err => {
-          console.error("Playback error:", err);
-        });
-      } else {
-        audioRef.current.pause();
-      }
-    }
+    if (!audioRef.current) return;
+    if (isPlaying) audioRef.current.pause();
+    else audioRef.current.play().catch(() => {});
+    setIsPlaying(!isPlaying);
   };
 
-  // When user starts dragging the seek bar
-  const handleSeekStart = (e) => {
+  // Seek bar handlers
+  const handleSeekStart = () => {
     isSeekingRef.current = true;
-    if (audioRef.current && isPlaying) {
-      audioRef.current.pause();
-    }
+    if (audioRef.current && isPlaying) audioRef.current.pause();
   };
 
-  // While dragging
   const handleSeekChange = (e) => {
-    const time = parseFloat(e.target.value);
-    setCurrentTime(time);
-    if (audioRef.current) {
-      audioRef.current.currentTime = time;
-    }
+    const value = parseFloat(e.target.value);
+    setCurrentTime(value);
+    if (audioRef.current) audioRef.current.currentTime = value;
   };
 
-  // When user releases the seek bar
-  const handleSeekEnd = (e) => {
+  const handleSeekEnd = () => {
     isSeekingRef.current = false;
-    if (audioRef.current && isPlaying) {
-      audioRef.current.play().catch(err => {
-        console.error("Playback error:", err);
-      });
-    }
+    if (audioRef.current && isPlaying) audioRef.current.play().catch(() => {});
   };
 
-  // Format time mm:ss
+  // Format mm:ss
   const formatTime = (time) => {
     if (!time || isNaN(time)) return "0:00";
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60)
-      .toString()
-      .padStart(2, "0");
-    return `${minutes}:${seconds}`;
+    const min = Math.floor(time / 60);
+    const sec = Math.floor(time % 60).toString().padStart(2, "0");
+    return `${min}:${sec}`;
   };
 
   const progress = duration > 0 ? (currentTime / duration) * 100 : 0;
 
-  return (
-    <div style={{
-      position: "fixed",
-      bottom: 0,
-      left: 0,
-      right: 0,
-      backgroundColor: "#1a1a1a",
-      color: "#fff",
-      padding: "15px 20px",
-      boxShadow: "0 -2px 10px rgba(0,0,0,0.3)",
-      zIndex: 1000
-    }}>
-      <audio ref={audioRef}>
-        <source src={songurl} type="audio/mpeg" />
-      </audio>
+  if (!song?.Song) return null;
 
-      <div style={{
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: "#1a1a1a",
+        color: "#fff",
+        padding: "10px 15px",
         display: "flex",
         alignItems: "center",
-        gap: "15px",
-        maxWidth: "1200px",
-        margin: "0 auto"
-      }}>
-        {/* Play / Pause button */}
-        <button 
-          onClick={togglePlay}
+        gap: "10px",
+        boxShadow: "0 -2px 10px rgba(0,0,0,0.3)",
+        zIndex: 1000,
+      }}
+    >
+      {/* Song Image */}
+      <img
+        src={song.Image || "https://via.placeholder.com/50"}
+        alt={song.Title}
+        style={{
+          width: 50,
+          height: 50,
+          objectFit: "cover",
+          borderRadius: "5px",
+          flexShrink: 0,
+        }}
+      />
+
+      {/* Song info + seek bar */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
+        <div
           style={{
-            backgroundColor: "#1db954",
-            color: "#fff",
-            border: "none",
-            borderRadius: "50%",
-            width: "40px",
-            height: "40px",
-            fontSize: "16px",
-            cursor: "pointer",
             display: "flex",
+            justifyContent: "space-between",
             alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-            transition: "transform 0.1s"
           }}
-          onMouseDown={(e) => e.currentTarget.style.transform = "scale(0.95)"}
-          onMouseUp={(e) => e.currentTarget.style.transform = "scale(1)"}
         >
-          {isPlaying ? "⏸" : "▶"}
-        </button>
+          <div>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>{song.Title}</span>
+            {song.Artist && (
+              <span style={{ fontSize: 12, color: "#aaa", marginLeft: 5 }}>
+                {song.Artist}
+              </span>
+            )}
+          </div>
+          <span style={{ fontSize: 12 }}>
+            {formatTime(currentTime)} / {formatTime(duration)}
+          </span>
+        </div>
 
-        {/* Time - Current */}
-        <span style={{
-          fontSize: "12px",
-          minWidth: "40px",
-          flexShrink: 0
-        }}>
-          {formatTime(currentTime)}
-        </span>
-
-        {/* Seek Bar */}
+        {/* Seek bar */}
         <input
           type="range"
-          min="0"
+          min={0}
           max={duration || 0}
           value={currentTime}
           onChange={handleSeekChange}
@@ -186,24 +149,40 @@ const Player = ({ songurl }) => {
           onTouchEnd={handleSeekEnd}
           step="0.1"
           style={{
-            flex: 1,
+            width: "100%",
             height: "5px",
             cursor: "pointer",
             accentColor: "#1db954",
             background: `linear-gradient(to right, #1db954 0%, #1db954 ${progress}%, #4d4d4d ${progress}%, #4d4d4d 100%)`,
-            borderRadius: "5px"
+            borderRadius: "5px",
           }}
         />
-
-        {/* Time - Duration */}
-        <span style={{
-          fontSize: "12px",
-          minWidth: "40px",
-          flexShrink: 0
-        }}>
-          {formatTime(duration)}
-        </span>
       </div>
+
+      {/* Play/Pause */}
+      <button
+        onClick={togglePlay}
+        style={{
+          backgroundColor: "#1db954",
+          color: "#fff",
+          border: "none",
+          borderRadius: "50%",
+          width: 40,
+          height: 40,
+          fontSize: 16,
+          cursor: "pointer",
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        {isPlaying ? "⏸" : "▶"}
+      </button>
+
+      <audio ref={audioRef}>
+        <source src={song.Song} type="audio/mpeg" />
+      </audio>
     </div>
   );
 };
