@@ -2,8 +2,11 @@ from application.db import db
 from flask import jsonify,request
 from application.__init__ import app
 import cloudinary.uploader
+import jwt
 from fuzzywuzzy import fuzz
+import os
 
+secret=os.getenv("SECRET_KEY")
 
 @app.route("/addmusic",methods=['POST'])
 def addmusic():
@@ -86,3 +89,34 @@ def searchmusic():
 
     except Exception as e:
         return jsonify({"error": str(e),"message":"no result found"}), 500
+    
+
+@app.route("/registeruser",methods=['POST'])
+def RegisterUser():
+    try:
+        user=request.get_json()
+
+        if not user.get('Fullname') or not user.get('Username') or not user.get('Password') or not user.get('Email'):
+            return jsonify({"message":"all fields required "}),401
+        
+        already_registered_Email=db.Users.find_one({"Email":user.get('Email')})
+        already_registered_Username=db.Users.find_one({"Username":user.get('Username')})
+        if already_registered_Email :
+            return jsonify({"message":"Email already Registered"}),401
+        else :
+            if already_registered_Username:
+                return jsonify({"message":"Username already Registered"}),401
+        check=db.Users.insert_one(user)
+
+        inserted_data=db.Users.find_one({"_id":check.inserted_id})
+
+        payload={"Email":user.get('Email'),"Username":user.get('Username')}
+
+        if not check:
+            return jsonify({"message":"db insertion failed"}),401
+        else:
+         token=jwt.encode(payload,secret,algorithm="HS256")
+          
+         return jsonify({"message":"user registered Successfully","data":str(inserted_data),"Token":token}),200
+    except Exception as e:
+        return jsonify({"error":str(e)}),500
