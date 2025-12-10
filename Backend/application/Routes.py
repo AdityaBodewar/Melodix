@@ -2,6 +2,7 @@ from application.db import db
 from flask import jsonify,request
 from application.__init__ import app
 import cloudinary.uploader
+from fuzzywuzzy import fuzz
 
 
 @app.route("/addmusic",methods=['POST'])
@@ -39,3 +40,49 @@ def getallmusic():
         return jsonify({"message":"fetteched successfully","data":songs}),200
     except Exception as e:
         return jsonify({"error":str(e)}),500
+
+
+@app.route("/searchmusic", methods=["POST"])
+def searchmusic():
+    try:
+        data = request.json
+
+        if not data:
+            return jsonify({"message": "No data provided"}), 401
+
+        title = data.get("Title")
+
+        if not title:
+            return jsonify({"message": "Title is required"}), 401
+
+       
+        all_songs = list(db.Songs.find({}, {"_id": 1, "Title": 1}))
+
+        matched_songs = []
+
+        
+        threshold = 65
+
+        for song in all_songs:
+            score = fuzz.partial_ratio(title.lower(), song["Title"].lower())
+
+            if score >= threshold:
+                matched_songs.append(song)
+
+        if not matched_songs:
+            return jsonify({"message": "No result found"}), 401
+
+       
+        final_songs = []
+        for s in matched_songs:
+            full = db.Songs.find_one({"_id": s["_id"]})
+            full["_id"] = str(full["_id"])
+            final_songs.append(full)
+
+        return jsonify({
+            "message": "found successfully",
+            "data": final_songs
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e),"message":"no result found"}), 500

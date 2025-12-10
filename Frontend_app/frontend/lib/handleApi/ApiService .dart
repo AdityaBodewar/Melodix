@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 
 class ApiService {
-  static const String url = "http://10.88.17.81:5000/addmusic";
+  static const String url = "http://172.21.245.81:5000/addmusic";
 
   static Future<bool> uploadMusic({
     required String title,
@@ -38,4 +38,25 @@ class ApiService {
       return false;
     }
   }
+
+  // get all music from backend
+
+  static const String getMusicUrl = "http://172.21.245.81:5000/getallmusic";
+
+  static Future<List<dynamic>> fetchAllMusic() async {
+    Dio dio = Dio();
+    try {
+      Response response = await dio.get(getMusicUrl);
+
+      if (response.statusCode == 200) {
+        return response.data["data"];  // list of songs
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print("Error fetching songs: $e");
+      return [];
+    }
+  }
+
 }
