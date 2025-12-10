@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:frontend/MusicController.dart';
 
 class OfflinePlayerPage extends StatefulWidget {
   final String title;
@@ -21,7 +22,8 @@ class OfflinePlayerPage extends StatefulWidget {
 }
 
 class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
-  final AudioPlayer _player = AudioPlayer();
+  // GLOBAL PLAYER
+  final AudioPlayer _player = MusicController.player;
 
   Duration _duration = Duration.zero;
   Duration _position = Duration.zero;
@@ -31,35 +33,76 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
   @override
   void initState() {
     super.initState();
-    playSong();
 
+    // ✅ If SAME offline song already playing → DO NOT restart
+    if (MusicController.isOffline == true &&
+        MusicController.localFilePath == widget.filePath &&
+        MusicController.isPlaying == true)
+    {
+      isPlaying = true;
+
+      // Sync duration + position
+      _player.getDuration().then((d) {
+        if (d != null) setState(() => _duration = d);
+      });
+
+      _player.getCurrentPosition().then((p) {
+        if (p != null) setState(() => _position = p);
+      });
+    }
+    else
+    {
+      //  Play new offline song
+      playSong();
+    }
+
+    // Listen for duration updates
     _player.onDurationChanged.listen((d) {
-      setState(() => _duration = d);
+      if (mounted) setState(() => _duration = d);
     });
 
+    // Listen for playing position updates
     _player.onPositionChanged.listen((p) {
-      setState(() => _position = p);
+      if (mounted) setState(() => _position = p);
     });
+
+
   }
 
+  // 🎵 PLAY SONG
   Future<void> playSong() async {
-    await _player.stop();
-    await _player.play(DeviceFileSource(widget.filePath));
-    setState(() => isPlaying = true);
-  }
+    try {
+      final player = MusicController.player;
 
-  @override
-  void dispose() {
-    _player.dispose();
-    super.dispose();
+      // Stop any previous song (online/offline)
+      await player.stop();
+
+      //  Play offline song
+      await player.setSource(DeviceFileSource(widget.filePath));
+      await player.resume();
+
+      // Update global music controller
+      MusicController.title = widget.title;
+      MusicController.singer = widget.singer;
+      MusicController.image = widget.image;
+
+      MusicController.isOffline = true;
+      MusicController.localFilePath = widget.filePath;
+      MusicController.isPlaying = true;
+
+      setState(() => isPlaying = true);
+
+    } catch (e) {
+      print("Offline play error: $e");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // ⭐ THEME COLORS
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+    final textColor =
+        Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
     final subtitleColor = isDark ? Colors.white70 : Colors.black54;
 
     return Scaffold(
@@ -72,16 +115,14 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
               color: textColor, size: 32),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text("Now Playing",
-            style: TextStyle(color: textColor)),
+        title: Text("Now Playing", style: TextStyle(color: textColor)),
         centerTitle: true,
       ),
 
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-
-          // COVER IMAGE
+          // 📀 IMAGE
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ClipRRect(
@@ -95,7 +136,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
             ),
           ),
 
-          // TITLE
+          // 🎼 TITLE
           Text(
             widget.title,
             style: TextStyle(
@@ -105,26 +146,23 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
             ),
           ),
 
-          // SINGER
-          Text(
-            widget.singer,
-            style: TextStyle(color: subtitleColor, fontSize: 16),
-          ),
+          // 🎤 SINGER
+          Text(widget.singer,
+              style: TextStyle(color: subtitleColor, fontSize: 16)),
 
           const SizedBox(height: 20),
 
-          // SEEK BAR
+          // 🎚 SEEK BAR
           Slider(
             value: _position.inSeconds.toDouble(),
             max: (_duration.inSeconds == 0 ? 1 : _duration.inSeconds).toDouble(),
             activeColor: Colors.blue,
             onChanged: (value) async {
-              final pos = Duration(seconds: value.toInt());
-              await _player.seek(pos);
+              await _player.seek(Duration(seconds: value.toInt()));
             },
           ),
 
-          // TIME INDICATORS
+          // ⏳ TIME TEXT
           Text(
             "${formatTime(_position)} / ${formatTime(_duration)}",
             style: TextStyle(color: subtitleColor),
@@ -132,7 +170,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
 
           const SizedBox(height: 30),
 
-          // PLAY PAUSE BUTTON
+          // ▶ PLAY / PAUSE
           IconButton(
             iconSize: 60,
             color: textColor,
@@ -144,6 +182,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
                 await _player.resume();
               }
               setState(() => isPlaying = !isPlaying);
+              MusicController.isPlaying = isPlaying; // sync bottom bar
             },
           ),
         ],
@@ -151,6 +190,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
     );
   }
 
+  // Time formatting function
   String formatTime(Duration d) {
     String two(int n) => n.toString().padLeft(2, "0");
     return "${two(d.inMinutes)}:${two(d.inSeconds % 60)}";

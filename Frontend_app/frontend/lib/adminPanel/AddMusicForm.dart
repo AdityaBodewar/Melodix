@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:frontend/Screens/HomePage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
@@ -234,6 +235,12 @@ class _AddMusicFormState extends State<AddMusicForm> {
                     if (success) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(content: Text("Uploaded Successfully!")),
+
+                      );
+
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => HomePage()),
                       );
 
                       setState(() {
