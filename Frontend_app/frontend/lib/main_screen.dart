@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/OfflinePlayerPage.dart';
 import 'package:frontend/Screens/HomePage.dart';
 import 'package:frontend/Screens/MyLibrary.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
@@ -120,14 +121,13 @@ class _MainScreenState extends State<MainScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // 🌙 Dark Mode Colors
+    // THEME COLORS
     final darkGradient = const LinearGradient(
       colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
     );
     final darkText = Colors.white;
     final darkIcon = Colors.white;
 
-    // ☀️ Light Mode Colors
     final lightGradient = const LinearGradient(
       colors: [Color(0xFFEFEFEF), Color(0xFFDADADA)],
     );
@@ -136,16 +136,33 @@ class _MainScreenState extends State<MainScreen> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => SongPlayerPage(
-              songs: MusicController.currentList ?? [],
-              currentIndex: MusicController.currentIndex ?? 0,
+        if (MusicController.isOffline == true) {
+          // 🔥 Open offline player page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => OfflinePlayerPage(
+                title: MusicController.title!,
+                singer: MusicController.singer!,
+                image: MusicController.image!,
+                filePath: MusicController.localFilePath!,
+              ),
             ),
-          ),
-        );
+          );
+        } else {
+          // 🔥 Open online player page
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SongPlayerPage(
+                songs: MusicController.currentList ?? [],
+                currentIndex: MusicController.currentIndex ?? 0,
+              ),
+            ),
+          );
+        }
       },
+
       child: Container(
         height: 65,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -160,9 +177,10 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         ),
+
         child: Row(
           children: [
-            // COVER IMAGE
+            // 🖼 COVER IMAGE
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
@@ -175,7 +193,7 @@ class _MainScreenState extends State<MainScreen> {
 
             const SizedBox(width: 10),
 
-            // TITLE + ARTIST
+            // 🎵 TITLE + ARTIST
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -207,17 +225,31 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
 
-            // PLAY / PAUSE BUTTON
+            // ▶ PLAY / PAUSE BUTTON
             IconButton(
               icon: Icon(
                 MusicController.isPlaying ? Icons.pause : Icons.play_arrow,
                 color: isDark ? darkIcon : lightIcon,
                 size: 30,
               ),
-              onPressed: () {
-                MusicController.togglePlayPause();
-                setState(() {});
-              },
+                onPressed: () async {
+                  if (MusicController.isOffline == true) {
+                    // 🔥 control offline song using same global player
+                    if (MusicController.isPlaying) {
+                      await MusicController.player.pause();
+                    } else {
+                      await MusicController.player.resume();
+                    }
+
+                    MusicController.isPlaying = !MusicController.isPlaying;
+                    setState(() {});
+                  } else {
+                    // 🔥 online control
+                    MusicController.togglePlayPause();
+                    setState(() {});
+                  }
+                },
+
             ),
 
             const SizedBox(width: 8),

@@ -10,6 +10,10 @@ class MusicController {
   static String? singer;
   static String? image;
 
+  static bool isOffline = false;
+  static String? localFilePath;
+
+
   static int? currentIndex;
   static List? currentList;
 
@@ -45,5 +49,11 @@ class MusicController {
     // notify all listeners
     onPlayPausePressed?.call();
   }
+
+  static Future<void> stopOnlineSong() async {
+    await player.stop();
+    isPlaying = false;
+  }
+
 
 }
