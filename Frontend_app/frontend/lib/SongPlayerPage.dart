@@ -78,24 +78,48 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
 
   // ▶ PLAY SONG
+  // Future<void> playSong() async {
+  //   try {
+  //     await _player.stop();
+  //     await _player.setSourceUrl(currentSong["Song"]);
+  //     await _player.resume();
+  //     setState(() => isPlaying = true);
+  //   } catch (_) {}
+  //
+  //   MusicController.updateSong(
+  //     newTitle: currentSong["Title"],
+  //     newSinger: currentSong["Singer"],
+  //     newImage: currentSong["Image"],
+  //     index: index,
+  //     songList: widget.songs,
+  //   );
+  //
+  //
+  // }
   Future<void> playSong() async {
     try {
       await _player.stop();
       await _player.setSourceUrl(currentSong["Song"]);
       await _player.resume();
+
       setState(() => isPlaying = true);
+
+      // 🌟 UPDATE MUSIC CONTROLLER (MOST IMPORTANT)
+      MusicController.updateSong(
+        newTitle: currentSong["Title"],
+        newSinger: currentSong["Singer"],
+        newImage: currentSong["Image"],
+        index: index,
+        songList: widget.songs,
+      );
+
+      // ❗ RESET OFFLINE MODE
+      MusicController.isOffline = false;
+      MusicController.localFilePath = null;
+
     } catch (_) {}
-
-    MusicController.updateSong(
-      newTitle: currentSong["Title"],
-      newSinger: currentSong["Singer"],
-      newImage: currentSong["Image"],
-      index: index,
-      songList: widget.songs,
-    );
-
-
   }
+
 
   // ⏭ NEXT SONG
   void playNext() {

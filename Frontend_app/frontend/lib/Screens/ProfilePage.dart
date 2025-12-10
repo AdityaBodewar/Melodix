@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
+import 'package:frontend/EditProfilePage.dart';
 import 'package:frontend/HelpSupportPage.dart';
-import 'package:frontend/LanguagePage.dart';
+import 'package:frontend/LoginPage.dart';
 import 'package:frontend/PrivacyPage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/TermsPage.dart';
+import 'package:frontend/main_screen.dart';
 import 'package:frontend/theme_controller.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Profilepage extends StatefulWidget {
   const Profilepage({Key? key}) : super(key: key);
@@ -15,12 +18,43 @@ class Profilepage extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<Profilepage> {
-  String name = 'Music Lover';
-  String email = 'musiclover@example.com';
+  String name = "Music Lover";
+  String email = "musiclover@example.com";
+
+  bool isProfileLoaded = false; // 🔥 Stops flicker
+
+  Future<void> loadProfileData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    setState(() {
+      name = prefs.getString("fullname") ?? "Music Lover";
+      email = prefs.getString("email") ?? "musiclover@example.com";
+      isProfileLoaded = true; // 🔥 Now UI can show data
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadProfileData();
+  }
 
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+
+    // 🔥 Show loading indicator until SharedPreferences loads
+    if (!isProfileLoaded) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text("Profile"),
+          centerTitle: true,
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -32,10 +66,9 @@ class _ProfileScreenState extends State<Profilepage> {
       ),
 
       body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 120), // ⭐ ADDED: space for bottom bar
-
+        padding: const EdgeInsets.only(bottom: 120),
         child: Column(
-          mainAxisSize: MainAxisSize.min, // IMPORTANT for Scroll
+          mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             const SizedBox(height: 30),
@@ -72,8 +105,35 @@ class _ProfileScreenState extends State<Profilepage> {
 
             const SizedBox(height: 30),
 
-            // ⚙ Options
-            _buildProfileOption(Icons.edit, 'Edit Profile', _showEditDialog),
+            // Options
+            _buildProfileOption(Icons.edit, 'Edit Profile', () async {
+              SharedPreferences prefs = await SharedPreferences.getInstance();
+
+              String? email = prefs.getString("email");
+
+              if (email == null || email.isEmpty) {
+                // ❌ User not logged in
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("Please login first to edit profile"),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                );
+                return;
+              }
+
+              // ✔ User is logged in → allow Edit
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const EditProfilePage()),
+              );
+            }),
+
 
             _buildProfileOption(Icons.notifications, 'Notifications', () {
               Navigator.push(
@@ -86,13 +146,6 @@ class _ProfileScreenState extends State<Profilepage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(builder: (_) => const PrivacyPage()),
-              );
-            }),
-
-            _buildProfileOption(Icons.language, 'Language', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const LanguagePage()),
               );
             }),
 
@@ -121,7 +174,8 @@ class _ProfileScreenState extends State<Profilepage> {
               );
             }),
 
-            _buildProfileOption(Icons.logout, 'Logout', () {}),
+            // LOGOUT
+            _buildProfileOption(Icons.logout, "Logout", showLogoutConfirmDialog),
 
             const SizedBox(height: 20),
           ],
@@ -190,4 +244,53 @@ class _ProfileScreenState extends State<Profilepage> {
       },
     );
   }
+
+  // ------------------------ Logout ------------------------
+  void showLogoutConfirmDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text("Logout"),
+          content: const Text("Are you sure you want to logout?"),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // Cancel
+              child: const Text("Cancel"),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.pop(context); // Close dialog
+                await logoutUser();     // Call logout function
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+              child: const Text("Yes"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> logoutUser() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+
+    setState(() {
+      name = "Music Lover";
+      email = "musiclover@example.com";
+    });
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const MainScreen()),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Logged out successfully")),
+    );
+  }
+
 }
