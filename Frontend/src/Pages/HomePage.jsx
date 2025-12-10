@@ -1,6 +1,7 @@
 import React from 'react'
 import GetAllMusic from '../Components/GetAllMusic'
 import NavBar from '../Components/NavBar'
+import Login from '../Components/Login'
 
 const HomePage = () => {
   return (
@@ -27,7 +28,9 @@ const HomePage = () => {
 
 
 
-    <div className="footer"></div> 
+    <div className="footer">
+  
+      </div> 
     </div>
       
     
