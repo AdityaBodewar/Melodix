@@ -42,10 +42,10 @@ class MusicApp extends StatelessWidget {
           title: 'Melodix App',
           debugShowCheckedModeBanner: false,
 
-          // 🔥 Whole App Theme Controller
+          //  Whole App Theme Controller
           themeMode: mode,
 
-          // 🌞 LIGHT THEME
+          //  LIGHT THEME
           theme: ThemeData(
             brightness: Brightness.light,
             scaffoldBackgroundColor: Colors.white,
@@ -62,7 +62,7 @@ class MusicApp extends StatelessWidget {
             ),
           ),
 
-          // 🌙 DARK THEME
+          //  DARK THEME
           darkTheme: ThemeData(
             brightness: Brightness.dark,
             scaffoldBackgroundColor: const Color(0xFF121212),

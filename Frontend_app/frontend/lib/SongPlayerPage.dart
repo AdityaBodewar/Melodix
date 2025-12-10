@@ -43,21 +43,31 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     index = widget.currentIndex;
     currentSong = widget.songs[index];
 
-    playSong();
+    // Play only if switching song
+    if (MusicController.currentIndex != index) {
+      playSong();
+    } else {
+      // sync playing state
+      setState(() => isPlaying = MusicController.isPlaying);
+    }
 
+    // ⭐ Sync UI with already playing song
+    _player.getCurrentPosition().then((p) {
+      if (p != null) {
+        setState(() => _position = p);
+      }
+    });
+
+    _player.getDuration().then((d) {
+      if (d != null) {
+        setState(() => _duration = d);
+      }
+    });
+
+    // listeners
     _player.onDurationChanged.listen((d) {
       setState(() => _duration = d);
     });
-
-    MusicController.onPlayPausePressed = () async {
-      if (isPlaying) {
-        await _player.pause();
-      } else {
-        await _player.resume();
-      }
-      isPlaying = !isPlaying;
-    };
-
 
     _player.onPositionChanged.listen((p) {
       setState(() => _position = p);
@@ -65,6 +75,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
     _player.onPlayerComplete.listen((_) => playNext());
   }
+
 
   // ▶ PLAY SONG
   Future<void> playSong() async {
