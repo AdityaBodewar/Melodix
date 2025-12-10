@@ -35,7 +35,7 @@ class _MainScreenState extends State<MainScreen> {
       });
     };
 
-    // 🔥 IMPORTANT: Listen to MusicController updates
+    //  IMPORTANT: Listen to MusicController updates
     MusicController.player.onPlayerStateChanged.listen((state) {
       setState(() {
         MusicController.isPlaying = state == PlayerState.playing;
@@ -114,17 +114,28 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Widget _buildNowPlayingBar() {
-    // ❗ hide only when no song selected yet
     if (MusicController.title == null) {
       return SizedBox();
     }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final textColor = isDark ? Colors.white : Colors.black;
+
+    // 🌙 Dark Mode Colors
+    final darkGradient = const LinearGradient(
+      colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
+    );
+    final darkText = Colors.white;
+    final darkIcon = Colors.white;
+
+    // ☀️ Light Mode Colors
+    final lightGradient = const LinearGradient(
+      colors: [Color(0xFFEFEFEF), Color(0xFFDADADA)],
+    );
+    final lightText = Colors.black;
+    final lightIcon = Colors.black87;
 
     return GestureDetector(
       onTap: () {
-        // open player page again
         Navigator.push(
           context,
           MaterialPageRoute(
@@ -135,15 +146,19 @@ class _MainScreenState extends State<MainScreen> {
           ),
         );
       },
-
       child: Container(
         height: 65,
         margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
-          ),
+          gradient: isDark ? darkGradient : lightGradient,
           borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: isDark ? Colors.black45 : Colors.grey.shade300,
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           children: [
@@ -169,17 +184,22 @@ class _MainScreenState extends State<MainScreen> {
                   Text(
                     MusicController.title ?? "",
                     style: TextStyle(
-                      color: textColor,
+                      color: isDark ? darkText : lightText,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
+
                   const SizedBox(height: 4),
+
                   Text(
                     MusicController.singer ?? "",
-                    style: TextStyle(color: Colors.grey, fontSize: 12),
+                    style: TextStyle(
+                      color: isDark ? Colors.white70 : Colors.black54,
+                      fontSize: 12,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -187,13 +207,11 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
 
-            // PLAY PAUSE
+            // PLAY / PAUSE BUTTON
             IconButton(
               icon: Icon(
-                MusicController.isPlaying
-                    ? Icons.pause
-                    : Icons.play_arrow,
-                color: Colors.white,
+                MusicController.isPlaying ? Icons.pause : Icons.play_arrow,
+                color: isDark ? darkIcon : lightIcon,
                 size: 30,
               ),
               onPressed: () {
@@ -208,5 +226,6 @@ class _MainScreenState extends State<MainScreen> {
       ),
     );
   }
+
 
 }

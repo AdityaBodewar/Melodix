@@ -10,8 +10,8 @@ class MusicController {
   static String? singer;
   static String? image;
 
-  static int? currentIndex;             // ⭐ new
-  static List? currentList;             // ⭐ new
+  static int? currentIndex;
+  static List? currentList;
 
   static bool isPlaying = false;
   static Function()? onPlayPausePressed;
@@ -27,14 +27,23 @@ class MusicController {
     singer = newSinger;
     image = newImage;
 
-    currentIndex = index;   // ⭐
-    currentList = songList; // ⭐
+    currentIndex = index;
+    currentList = songList;
 
     isPlaying = true;
   }
 
-  static void togglePlayPause() {
-    isPlaying = !isPlaying;
+  static Future<void> togglePlayPause() async {
+    if (player.state == PlayerState.playing) {
+      await player.pause();
+      isPlaying = false;
+    } else {
+      await player.resume();
+      isPlaying = true;
+    }
+
+    // notify all listeners
     onPlayPausePressed?.call();
   }
+
 }
