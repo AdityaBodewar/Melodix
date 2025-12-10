@@ -4,6 +4,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
 import 'package:frontend/AllSongsPage.dart';
+import 'package:frontend/LoginPage.dart';
+import 'package:frontend/Registerpage.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/SongPlayerPage.dart';
@@ -11,6 +13,7 @@ import 'package:frontend/adminPanel/AddMusicForm.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
 import 'package:frontend/adminPanel/adminloginpage.dart';
 import 'package:frontend/main_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -23,13 +26,26 @@ class _HomePageState extends State<HomePage> {
 
   List<dynamic> topSongs = [];
   bool isLoading = true;
+  Future<void> loadSongs() async {
+    setState(() {
+      isLoading = true;
+    });
 
-  void loadSongs() async {
-    topSongs = await ApiService.fetchAllMusic();
+    // 🔥 STEP 1: Clear previous songs to avoid duplicates
+    topSongs.clear();
+
+    // 🔥 STEP 2: Fetch fresh updated list
+    final newSongs = await ApiService.fetchAllMusic();
+
+    // 🔥 STEP 3: Replace list
+    topSongs = newSongs;
+
     setState(() {
       isLoading = false;
     });
   }
+
+
 
   List<Map<String, String>> banners = [
     {"image": "assets/images/arijit_img.jpeg"},
@@ -93,33 +109,124 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Colors.blue,
               child: IconButton(
                 icon: const Icon(Icons.person, color: Colors.white),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const AdminLoginPage()),
-                  ).then((value) {
-                    loadSongs();
-                  });
+                onPressed: () async {
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  String? token = prefs.getString("token");
+
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
+
+                  // 👉 IF USER IS LOGGED IN → GO TO PROFILE PAGE
+                  if (token != null && token.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => Profilepage()),
+                    );
+                    return;
+                  }
+
+                  // 👉 IF NOT LOGGED IN → SHOW LOGIN / REGISTER OPTIONS
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: isDark ? Colors.black : Colors.white,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    builder: (context) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              "Account Options",
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          Divider(
+                            height: 1,
+                            color: isDark ? Colors.white24 : Colors.black12,
+                          ),
+
+                          // LOGIN BTN
+                          ListTile(
+                            leading: Icon(Icons.login,
+                                color: isDark ? Colors.white : Colors.black87),
+                            title: Text("Login",
+                                style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black)),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => LoginPage()),
+                              );
+                            },
+                          ),
+
+                          // REGISTER BTN
+                          ListTile(
+                            leading: Icon(Icons.app_registration,
+                                color: isDark ? Colors.white : Colors.black87),
+                            title: Text("Register",
+                                style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black)),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => RegisterPage()),
+                              );
+                            },
+                          ),
+
+                          // CANCEL
+                          ListTile(
+                            leading: const Icon(Icons.close, color: Colors.redAccent),
+                            title: const Text(
+                              "Cancel",
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                 },
+
+
+
               ),
             ),
           ),
         ],
       ),
       drawer: _buildDrawer(),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 140),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            buildBannerSlider(),
-            const SizedBox(height: 20),
-            _buildRecentlyPlayed(textColor, isDark),
-            const SizedBox(height: 20),
-            _buildTopCharts(textColor),
-            const SizedBox(height: 40),
-            _buildArtistAlbum(textColor),
-          ],
+      body: RefreshIndicator(
+        onRefresh: () async {
+          await loadSongs();      // 🔥 reload songs
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(), // 🔥 allow scroll & pull even if short
+          padding: const EdgeInsets.only(bottom: 140),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildBannerSlider(),
+              const SizedBox(height: 20),
+              _buildRecentlyPlayed(textColor, isDark),
+              const SizedBox(height: 20),
+              _buildTopCharts(textColor),
+              const SizedBox(height: 40),
+              _buildArtistAlbum(textColor),
+            ],
+          ),
         ),
       ),
     );

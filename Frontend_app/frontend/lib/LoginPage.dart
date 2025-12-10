@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/handleApi/ApiService .dart';
+import 'package:frontend/Screens/HomePage.dart';
+import 'package:frontend/adminPanel/adminloginpage.dart';
+import 'package:frontend/Registerpage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'main_screen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -8,183 +14,270 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final _formKey = GlobalKey<FormState>();
-
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
 
   bool hidePassword = true;
+  bool isLoading = false;
 
+  // =====================================================================================
+  // 🔥 MAIN LOGIN FUNCTION
+  // =====================================================================================
+  Future<void> handleLogin() async {
+    if (isLoading) return;
+
+    String mail = email.text.trim();
+    String pass = password.text.trim();
+
+    if (mail.isEmpty || pass.isEmpty) {
+      showError("Email and Password required");
+      return;
+    }
+
+    setState(() => isLoading = true);
+
+    final result = await ApiService.login_flutter(email: mail, password: pass);
+
+    setState(() => isLoading = false);
+
+    print("📌 FINAL RESULT = $result");
+
+    // -------------------------
+    // NEW FIXED LOGIN CHECK
+    // -------------------------
+
+    final status = result["status"];
+    final data = result["data"];
+
+    print("STATUS = $status");
+    print("DATA = $data");
+
+   //❌ Wrong email or wrong password
+    if (status == 401) {
+      String msg = (data["message"] ?? data["error"] ?? "").toString().trim().toLowerCase();
+
+      if (msg.contains("email") && msg.contains("not") && msg.contains("registered")) {
+        showError("Email not registered");
+      }
+      else if (msg.contains("wrong") && msg.contains("password")) {
+        showError("Wrong Password");
+      }
+      else {
+        showError("Login failed");
+      }
+      return;
+    }
+
+
+
+    // ❌ Server error
+    if (status == 500) {
+      showError(data["error"] ?? "Server error");
+      return;
+    }
+
+    // -------------------------
+    // SUCCESSFUL LOGIN
+    // -------------------------
+    if (status == 200) {
+      final role = data["Role"] ?? "";
+      final token = data["Token"] ?? "";
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString("token", token);
+      await prefs.setString("role", role);
+
+      await prefs.setString("fullname", data["Fullname"] ?? "");
+      await prefs.setString("email", data["Email"] ?? "");
+
+      print("FULLNAME FROM BACKEND = ${data["Fullname"]}");
+      print("EMAIL FROM BACKEND = ${data["Email"]}");
+
+
+      showSuccess("$role Login Successfully!");
+
+      if (role == "Admin") {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const AdminLoginPage()),
+        );
+      } else {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => MainScreen()),
+        );
+      }
+
+      return;
+    }
+
+    // ❌ Fallback (unexpected issue)
+    showError("Unexpected error occurred");
+  }
+
+
+
+  // =====================================================================================
+  // 🔥 SNACKBAR HELPERS
+  // =====================================================================================
+  void showError(String msg) {
+    FocusScope.of(context).unfocus();     // 🔥 Close keyboard
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.red,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+
+  void showSuccess(String msg) {
+    FocusScope.of(context).unfocus();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg),
+        backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+
+
+  // =====================================================================================
+  // UI
+  // =====================================================================================
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Welcome Back",
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 30),
 
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              _buildInputField(
+                controller: email,
+                label: "Email",
+                icon: Icons.email,
+              ),
+              const SizedBox(height: 20),
 
-                const Text(
-                  "Welcome Back",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
+              _buildPasswordField(),
+              const SizedBox(height: 30),
+
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: isLoading ? null : handleLogin,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text(
+                    "Login",
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
+              ),
 
-                const SizedBox(height: 30),
+              const SizedBox(height: 20),
 
-                // Email
-                _buildTextField(
-                  controller: email,
-                  label: "Email",
-                  icon: Icons.email,
-                  keyboard: TextInputType.emailAddress,
-                  validator: (value) {
-                    if (value!.isEmpty) return "Enter email";
-                    if (!value.contains("@")) return "Invalid email";
-                    return null;
-                  },
-                ),
-
-                const SizedBox(height: 16),
-
-                // Password
-                _buildPasswordField(),
-
-                const SizedBox(height: 12),
-
-                // Forgot Password
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: TextButton(
-                    onPressed: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text("Forgot Password Clicked"),
-                        ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text("Don't have an account?",
+                      style: TextStyle(
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      )),
+                  const SizedBox(width: 5),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const RegisterPage()),
                       );
                     },
                     child: const Text(
-                      "Forgot Password?",
-                      style: TextStyle(color: Colors.blue),
+                      "Register",
+                      style:
+                      TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                ),
-
-                const SizedBox(height: 20),
-
-                // Login Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Login Successful!",
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            backgroundColor: Colors.green,
-                          ),
-                        );
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: const Text(
-                      "Login",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-
-              ],
-            ),
+                  )
+                ],
+              )
+            ],
           ),
         ),
       ),
     );
   }
 
-  // Reusable Email Field
-  Widget _buildTextField({
+  // =====================================================================================
+  // INPUT FIELD
+  // =====================================================================================
+  Widget _buildInputField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
-    required FormFieldValidator<String> validator,
-    TextInputType keyboard = TextInputType.text,
   }) {
-    return TextFormField(
+    return TextField(
       controller: controller,
-      validator: validator,
-      keyboardType: keyboard,
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: Icon(icon, color: Colors.grey),
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: Icon(icon, color: Colors.white70),
         filled: true,
         fillColor: const Color(0xFF1E1E1E),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.blue),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
-  // Password Field
+  // =====================================================================================
+  // PASSWORD FIELD
+  // =====================================================================================
   Widget _buildPasswordField() {
-    return TextFormField(
+    return TextField(
       controller: password,
       obscureText: hidePassword,
-      validator: (value) {
-        if (value!.isEmpty) return "Enter password";
-        if (value.length < 6) return "Password too weak";
-        return null;
-      },
       style: const TextStyle(color: Colors.white),
       decoration: InputDecoration(
         labelText: "Password",
-        labelStyle: const TextStyle(color: Colors.grey),
-        prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+        labelStyle: const TextStyle(color: Colors.white70),
+        prefixIcon: const Icon(Icons.lock, color: Colors.white70),
         suffixIcon: IconButton(
           icon: Icon(
             hidePassword ? Icons.visibility_off : Icons.visibility,
-            color: Colors.grey,
+            color: Colors.white70,
           ),
-          onPressed: () {
-            setState(() {
-              hidePassword = !hidePassword;
-            });
-          },
+          onPressed: () => setState(() => hidePassword = !hidePassword),
         ),
         filled: true,
         fillColor: const Color(0xFF1E1E1E),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Colors.blue),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

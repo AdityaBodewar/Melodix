@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend/NotLoggedInPage.dart';
 import 'package:frontend/OfflinePlayerPage.dart';
 import 'package:frontend/Screens/HomePage.dart';
 import 'package:frontend/Screens/MyLibrary.dart';
@@ -7,7 +8,7 @@ import 'package:frontend/Screens/SearchPage.dart';
 import 'package:frontend/MusicController.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:frontend/SongPlayerPage.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({Key? key}) : super(key: key);
@@ -30,53 +31,72 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
+
     MainScreen.changeTab = (int index) {
       setState(() {
         _currentIndex = index;
       });
     };
 
-    //  IMPORTANT: Listen to MusicController updates
+    // Listen to online/offline player state
     MusicController.player.onPlayerStateChanged.listen((state) {
       setState(() {
-        MusicController.isPlaying = state == PlayerState.playing;
+        MusicController.isPlaying = (state == PlayerState.playing);
       });
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          _screens[_currentIndex],   //  MAIN SCREEN at bottom
+    DateTime? lastPressed; // <-- ADD THIS
 
-          //  NOW PLAYING BAR at bottom ABOVE NAV BAR
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 60,  // bottom nav ki height + margin
-            child: _buildNowPlayingBar(),
-          ),
+    return WillPopScope(
+      onWillPop: () async {
+        DateTime now = DateTime.now();
 
-          //  BOTTOM NAV BAR at bottom-most
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: _buildBottomNavigationBar(),
-          ),
-        ],
+        if (lastPressed == null ||
+            now.difference(lastPressed!) > Duration(seconds: 2)) {
+          lastPressed = now;
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Press back again to exit"),
+              duration: Duration(seconds: 2),
+            ),
+          );
+
+          return false; // <-- DO NOT EXIT
+        }
+
+        return true; // <-- EXIT APP
+      },
+
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: Stack(
+          children: [
+            _screens[_currentIndex],
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 60,
+              child: _buildNowPlayingBar(),
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomNavigationBar(),
+            ),
+          ],
+        ),
       ),
-
-
     );
   }
 
   Widget _buildBottomNavigationBar() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    final bgColor = isDark ? Color(0xFF1E1E1E) : Colors.white;
     final unselected = isDark ? Colors.grey : Colors.black54;
 
     return Container(
@@ -86,33 +106,60 @@ class _MainScreenState extends State<MainScreen> {
           BoxShadow(
             color: Colors.black.withOpacity(0.3),
             blurRadius: 10,
-            offset: const Offset(0, -2),
+            offset: Offset(0, -2),
           ),
         ],
       ),
       child: BottomNavigationBar(
         currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+
+        // 🔥 Main Logic For Restricting Pages
+        onTap: (index) async {
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          String? token = prefs.getString("token");
+
+          // 🔥 User is NOT logged in & trying to open My Library (2) or Profile (3)
+          if ((index == 2 || index == 3) && (token == null || token.isEmpty)) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const NotLoggedInPage()),
+            );
+            return;
+          }
+
+          // Otherwise allow navigation
+          setState(() => _currentIndex = index);
         },
+
         type: BottomNavigationBarType.fixed,
         backgroundColor: bgColor,
         selectedItemColor: Colors.blue,
         unselectedItemColor: unselected,
         selectedFontSize: 12,
         unselectedFontSize: 12,
+
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: 'Search'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.library_music), label: 'My Library'),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search),
+            label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.library_music),
+            label: 'My Library',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
       ),
     );
   }
+
 
   Widget _buildNowPlayingBar() {
     if (MusicController.title == null) {
@@ -121,23 +168,18 @@ class _MainScreenState extends State<MainScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    // THEME COLORS
-    final darkGradient = const LinearGradient(
+    final darkGradient = LinearGradient(
       colors: [Color(0xFF2A2A2A), Color(0xFF1E1E1E)],
     );
-    final darkText = Colors.white;
-    final darkIcon = Colors.white;
 
-    final lightGradient = const LinearGradient(
+    final lightGradient = LinearGradient(
       colors: [Color(0xFFEFEFEF), Color(0xFFDADADA)],
     );
-    final lightText = Colors.black;
-    final lightIcon = Colors.black87;
 
     return GestureDetector(
       onTap: () {
         if (MusicController.isOffline == true) {
-          // 🔥 Open offline player page
+          // open offline player page
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -150,7 +192,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
           );
         } else {
-          // 🔥 Open online player page
+          // open online player page
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -165,7 +207,7 @@ class _MainScreenState extends State<MainScreen> {
 
       child: Container(
         height: 65,
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           gradient: isDark ? darkGradient : lightGradient,
           borderRadius: BorderRadius.circular(12),
@@ -173,14 +215,14 @@ class _MainScreenState extends State<MainScreen> {
             BoxShadow(
               color: isDark ? Colors.black45 : Colors.grey.shade300,
               blurRadius: 6,
-              offset: const Offset(0, 2),
+              offset: Offset(0, 2),
             ),
           ],
         ),
 
         child: Row(
           children: [
-            // 🖼 COVER IMAGE
+            // SONG IMAGE
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
@@ -191,9 +233,9 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
 
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
 
-            // 🎵 TITLE + ARTIST
+            // TITLE + ARTIST
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -202,16 +244,14 @@ class _MainScreenState extends State<MainScreen> {
                   Text(
                     MusicController.title ?? "",
                     style: TextStyle(
-                      color: isDark ? darkText : lightText,
+                      color: isDark ? Colors.white : Colors.black,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-
-                  const SizedBox(height: 4),
-
+                  SizedBox(height: 4),
                   Text(
                     MusicController.singer ?? "",
                     style: TextStyle(
@@ -225,39 +265,34 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
 
-            // ▶ PLAY / PAUSE BUTTON
+            // PLAY / PAUSE BUTTON
             IconButton(
               icon: Icon(
                 MusicController.isPlaying ? Icons.pause : Icons.play_arrow,
-                color: isDark ? darkIcon : lightIcon,
+                color: isDark ? Colors.white : Colors.black,
                 size: 30,
               ),
-                onPressed: () async {
-                  if (MusicController.isOffline == true) {
-                    // 🔥 control offline song using same global player
-                    if (MusicController.isPlaying) {
-                      await MusicController.player.pause();
-                    } else {
-                      await MusicController.player.resume();
-                    }
-
-                    MusicController.isPlaying = !MusicController.isPlaying;
-                    setState(() {});
+              onPressed: () async {
+                if (MusicController.isOffline == true) {
+                  // offline control
+                  if (MusicController.isPlaying) {
+                    await MusicController.player.pause();
                   } else {
-                    // 🔥 online control
-                    MusicController.togglePlayPause();
-                    setState(() {});
+                    await MusicController.player.resume();
                   }
-                },
-
+                  MusicController.isPlaying = !MusicController.isPlaying;
+                } else {
+                  // online control
+                  MusicController.togglePlayPause();
+                }
+                setState(() {});
+              },
             ),
 
-            const SizedBox(width: 8),
+            SizedBox(width: 8),
           ],
         ),
       ),
     );
   }
-
-
 }
