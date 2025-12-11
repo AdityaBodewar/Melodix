@@ -4,7 +4,6 @@ import 'package:url_launcher/url_launcher.dart';
 class HelpSupportPage extends StatelessWidget {
   const HelpSupportPage({super.key});
 
-  // 📩 Open Email App for Support
   Future<void> _openEmail() async {
     final Uri emailLaunchUri = Uri(
       scheme: 'mailto',
@@ -31,7 +30,6 @@ class HelpSupportPage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
 
-          // ❓ Frequently Asked Questions
           const Text(
             "Frequently Asked Questions",
             style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
@@ -52,7 +50,6 @@ class HelpSupportPage extends StatelessWidget {
 
           const SizedBox(height: 25),
 
-          // 📞 Contact Section
           const Text(
             "Contact Us",
             style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
@@ -91,7 +88,6 @@ class HelpSupportPage extends StatelessWidget {
 
           const SizedBox(height: 25),
 
-          // ℹ️ App Info
           Center(
             child: Column(
               children: const [
@@ -108,7 +104,6 @@ class HelpSupportPage extends StatelessWidget {
     );
   }
 
-  // FAQ UI Widget
   Widget _faqTile(String title, String description) {
     return Card(
       color: const Color(0xFF1E1E1E),

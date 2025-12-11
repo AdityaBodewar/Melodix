@@ -20,9 +20,6 @@ class _LoginPageState extends State<LoginPage> {
   bool hidePassword = true;
   bool isLoading = false;
 
-  // =====================================================================================
-  // 🔥 MAIN LOGIN FUNCTION
-  // =====================================================================================
   Future<void> handleLogin() async {
     if (isLoading) return;
 
@@ -40,11 +37,7 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => isLoading = false);
 
-    print("📌 FINAL RESULT = $result");
-
-    // -------------------------
-    // NEW FIXED LOGIN CHECK
-    // -------------------------
+    print(" FINAL RESULT = $result");
 
     final status = result["status"];
     final data = result["data"];
@@ -52,7 +45,6 @@ class _LoginPageState extends State<LoginPage> {
     print("STATUS = $status");
     print("DATA = $data");
 
-   //❌ Wrong email or wrong password
     if (status == 401) {
       String msg = (data["message"] ?? data["error"] ?? "").toString().trim().toLowerCase();
 
@@ -70,15 +62,12 @@ class _LoginPageState extends State<LoginPage> {
 
 
 
-    // ❌ Server error
     if (status == 500) {
       showError(data["error"] ?? "Server error");
       return;
     }
 
-    // -------------------------
-    // SUCCESSFUL LOGIN
-    // -------------------------
+
     if (status == 200) {
       final role = data["Role"] ?? "";
       final token = data["Token"] ?? "";
@@ -111,17 +100,13 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // ❌ Fallback (unexpected issue)
     showError("Unexpected error occurred");
   }
 
 
 
-  // =====================================================================================
-  // 🔥 SNACKBAR HELPERS
-  // =====================================================================================
   void showError(String msg) {
-    FocusScope.of(context).unfocus();     // 🔥 Close keyboard
+    FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
@@ -144,9 +129,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
 
-  // =====================================================================================
-  // UI
-  // =====================================================================================
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -234,9 +217,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // =====================================================================================
-  // INPUT FIELD
-  // =====================================================================================
   Widget _buildInputField({
     required TextEditingController controller,
     required String label,
@@ -256,9 +236,6 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // =====================================================================================
-  // PASSWORD FIELD
-  // =====================================================================================
   Widget _buildPasswordField() {
     return TextField(
       controller: password,

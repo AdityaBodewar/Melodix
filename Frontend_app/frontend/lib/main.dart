@@ -1,20 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-// Screens
 import 'Screens/HomePage.dart';
 import 'Screens/SearchPage.dart';
 import 'Screens/ProfilePage.dart';
 import 'Screens/MyLibrary.dart';
 import 'main_screen.dart';
 
-// Theme Controller
 import 'theme_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Status Bar Design
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
