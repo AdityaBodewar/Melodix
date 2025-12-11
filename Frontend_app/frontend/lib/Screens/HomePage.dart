@@ -580,10 +580,14 @@ class _HomePageState extends State<HomePage> {
                 onTap: () {
 
                   Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ArtistSongsPage(artistId: artist["artist_id"], artistName: artist["name"]),
-                      ),);
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => ArtistSongsPage(
+                        artistId: artist["_id"],                // 🔥 backend field
+                        artistName: artist["Fullname"],         // 🔥 backend field
+                      ),
+                    ),
+                  );
                 },
                 child: _buildArtistCard(artist),
               );
@@ -605,15 +609,16 @@ class _HomePageState extends State<HomePage> {
         children: [
           ClipOval(
             child: Image.network(
-              artist["image"],
+              "https://via.placeholder.com/150",   // 🔥 क्योंकि API image नहीं देता
               height: 120,
               width: 120,
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: 8),
+
           Text(
-            artist["name"],
+            artist["Fullname"] ?? "Unknown Artist",   // 🔥 सही field
             style: TextStyle(
               color: textColor,
               fontSize: 16,
@@ -626,5 +631,6 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 
 }
