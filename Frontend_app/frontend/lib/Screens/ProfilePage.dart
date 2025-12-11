@@ -6,6 +6,7 @@ import 'package:frontend/LoginPage.dart';
 import 'package:frontend/PrivacyPage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/TermsPage.dart';
+import 'package:frontend/adminPanel/AddMusicForm.dart';
 import 'package:frontend/main_screen.dart';
 import 'package:frontend/theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -20,6 +21,8 @@ class Profilepage extends StatefulWidget {
 class _ProfileScreenState extends State<Profilepage> {
   String name = "Music Lover";
   String email = "musiclover@example.com";
+  String role = "User";
+
 
   bool isProfileLoaded = false;
 
@@ -29,6 +32,9 @@ class _ProfileScreenState extends State<Profilepage> {
     setState(() {
       name = prefs.getString("fullname") ?? "Music Lover";
       email = prefs.getString("email") ?? "musiclover@example.com";
+
+      role  = prefs.getString("role") ?? "User";
+
       isProfileLoaded = true;
     });
   }
@@ -172,6 +178,16 @@ class _ProfileScreenState extends State<Profilepage> {
                 MaterialPageRoute(builder: (_) => const TermsPage()),
               );
             }),
+
+            // 🔥 Artist Add Song Option
+            if (role == "Artist")
+              _buildProfileOption(Icons.library_music, "Add Song", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => AddMusicForm()),
+                );
+              }),
+
 
             // LOGOUT
             _buildProfileOption(Icons.logout, "Logout", showLogoutConfirmDialog),

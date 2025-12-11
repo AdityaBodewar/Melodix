@@ -19,6 +19,11 @@ class ApiService {
   // NEW PROFILE UPDATE API
   static const String updateProfileUrl = "$baseUrl/update_profile";
 
+  // ARTIST APIS
+  static const String getArtistsUrl = "$baseUrl/artists";
+  static const String getArtistSongsUrl = "$baseUrl/artist";  // /artist/<id>/songs
+
+
   // UPLOAD MUSIC (ADMIN)
   static Future<bool> uploadMusic({
     required String title,
@@ -27,6 +32,8 @@ class ApiService {
     required String type,
     required File image,
     required File audio,
+    required String token,
+
     required Function(int sent, int total) onProgress,
   }) async {
     Dio dio = Dio();
@@ -44,6 +51,11 @@ class ApiService {
       Response response = await dio.post(
         addMusicUrl,
         data: formData,
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+          },
+        ),
         onSendProgress: onProgress,
       );
 
@@ -270,6 +282,41 @@ class ApiService {
     };
   }
 
+  static Future<List<dynamic>> getAllArtists() async {
+    Dio dio = Dio();
 
+    try {
+      Response res = await dio.get(getArtistsUrl);
+
+      if (res.statusCode == 200) {
+        return res.data["artists"];
+      }
+    } catch (e) {
+      print("Artist fetch error: $e");
+    }
+
+    return [];
+  }
+
+  //Get Songs of a Particular Artist
+
+  static Future<Map<String, dynamic>> getArtistSongs(String artistId) async {
+    Dio dio = Dio();
+
+    try {
+      Response res = await dio.get("$getArtistSongsUrl/$artistId/songs");
+
+      return {
+        "status": res.statusCode,
+        "data": res.data,
+      };
+    } catch (e) {
+      print("Artist songs error: $e");
+      return {
+        "status": 500,
+        "data": {"error": "Something went wrong"}
+      };
+    }
+  }
 
 }

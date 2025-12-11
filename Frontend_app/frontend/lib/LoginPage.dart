@@ -76,6 +76,9 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString("token", token);
       await prefs.setString("role", role);
 
+      await prefs.setString("user_id", data["user_id"] ?? "");
+
+
       await prefs.setString("fullname", data["Fullname"] ?? "");
       await prefs.setString("email", data["Email"] ?? "");
 

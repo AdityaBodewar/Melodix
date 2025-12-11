@@ -4,6 +4,7 @@ import 'package:frontend/Screens/HomePage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AdminPanel extends StatelessWidget {
   const AdminPanel({super.key});
@@ -47,7 +48,24 @@ class _AddMusicFormState extends State<AddMusicForm> {
   double uploadProgress = 0.0;
   bool isUploading = false;
 
+  String? userToken;
+
+
   final ImagePicker picker = ImagePicker();
+
+
+  @override
+  void initState() {
+    super.initState();
+    loadToken();
+  }
+
+  Future<void> loadToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    userToken = prefs.getString("token");
+    print("Loaded Token: $userToken");
+  }
+
 
   Future pickImage() async {
     final XFile? img = await picker.pickImage(source: ImageSource.gallery);
@@ -62,6 +80,7 @@ class _AddMusicFormState extends State<AddMusicForm> {
       setState(() => selectedAudio = File(result.files.single.path!));
     }
   }
+
 
   bool validateFields() {
     if (titleCtrl.text.isEmpty ||
@@ -223,6 +242,7 @@ class _AddMusicFormState extends State<AddMusicForm> {
                       singer: singerCtrl.text,
                       language: langCtrl.text,
                       type: typeCtrl.text,
+                      token: userToken!,
                       image: selectedImage!,
                       audio: selectedAudio!,
                       onProgress: (sent, total) {
