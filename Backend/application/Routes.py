@@ -306,3 +306,153 @@ def myPlaylists():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+
+# ------------------- FIX: SECRET MUST BE STRING -------------------
+secret = "mysecretkey123"     #  Make sure this is NOT bytes
+
+
+@app.route("/login_flutter", methods=['POST'])
+def login_flutter():
+    try:
+        data = request.get_json()
+
+        if not data.get('Password') or not data.get('Email'):
+            return jsonify({"message": "Enter email and password"}), 401
+
+        email = data.get('Email')
+        password = data.get('Password')
+
+        # read database
+        user = db.Users.find_one({"Email": email})
+        artist = db.Artist.find_one({"Email": email})
+        admin = db.Admin.find_one({"Email": email})
+
+        # ---------------- TOKEN CREATION FUNCTION (FULLY FIXED) ----------------
+        def generate_token(role):
+            payload = {"Email": email, "Role": role}
+
+            # FIX → ensure secret is always string
+            token = jwt.encode(payload, str(secret), algorithm="HS256")
+
+            # FIX → ensure returned token is always string
+            if isinstance(token, bytes):
+                token = token.decode("utf-8")
+
+            return token
+
+        # ---------------- ADMIN LOGIN ----------------
+        if admin:
+            if password == admin.get("Password"):
+                token = generate_token("Admin")
+                return jsonify({
+                    "message": "Admin Login Successfully",
+                    "Token": token,
+                    "Role": "Admin"
+                }), 200
+            else:
+                return jsonify({"message": "wrong Password"}), 401
+
+        # ---------------- ARTIST LOGIN ----------------
+        if artist:
+            if password == artist.get("Password"):
+                token = generate_token("Artist")
+                return jsonify({
+                "message": "Artist Login Successfully",
+                "Token": token,
+                "Role": "Artist",
+                "Fullname": artist.get("Fullname"),
+                "Email": artist.get("Email")
+}), 200
+
+
+       # ---------------- USER LOGIN ----------------
+        if user:
+            if password == user.get("Password"):
+                token = generate_token("User")
+                return jsonify({
+                    "message": "User Login Successfully",
+                    "Token": token,
+                    "Role": "User",
+                    "Fullname": user.get("Fullname"),
+                    "Email": user.get("Email")
+                }), 200
+            else:
+                return jsonify({"message": "wrong Password"}), 401
+
+
+        # ---------------- EMAIL NOT FOUND ----------------
+        return jsonify({"message": "Email not registered"}), 401
+
+    except Exception as e:
+        print("LOGIN ERROR:", e)     #  Shows real error in terminal
+        return jsonify({"error": str(e)}), 500
+    
+    @app.route("/update_profile", methods=['POST'])
+    def update_profile():
+                try:
+                        old_email = request.form.get("OldEmail")     # identity of user
+                        fullname = request.form.get("Fullname")
+                        new_email = request.form.get("NewEmail")
+                        role = request.form.get("Role")              # User / Artist / Admin
+
+                        image = request.files.get("Image")
+
+                        # ---------- VALIDATION ----------
+                        if not old_email:
+                            return jsonify({"message": "Old Email is required"}), 401
+
+                        if not role:
+                            return jsonify({"message": "Role is required"}), 401
+
+                        # ---------- COLLECTION SELECT ----------
+                        if role == "User":
+                            collection = db.Users
+                        elif role == "Artist":
+                            collection = db.Artist
+                        elif role == "Admin":
+                            collection = db.Admin
+                        else:
+                            return jsonify({"message": "Invalid role"}), 400
+
+                        # ---------- FIND USER ----------
+                        user = collection.find_one({"Email": old_email})
+                        if not user:
+                            return jsonify({"message": "User not found"}), 404
+
+                        # ---------- BUILD UPDATE ----------
+                        update_data = {}
+
+                        if fullname:
+                            update_data["Fullname"] = fullname
+
+                        if new_email:
+                            update_data["Email"] = new_email
+
+                        # ---------- UPLOAD IMAGE ----------
+                        if image:
+                            img = cloudinary.uploader.upload(
+                                image,
+                                resource_type="image",
+                                folder="ProfileImages"
+                            )
+                            update_data["Image"] = img["secure_url"]
+
+                        # ---------- UPDATE DB ----------
+                        collection.update_one(~
+                            {"Email": old_email},
+                            {"$set": update_data}
+                        )
+
+                        updated_user = collection.find_one({"Email": new_email or old_email})
+                        updated_user["_id"] = str(updated_user["_id"])
+
+                        return jsonify({
+                            "message": "Profile updated successfully",
+                            "data": updated_user
+                        }), 200
+
+                except Exception as e:
+                            print("UPDATE PROFILE ERROR:", e)   
+
+                            return jsonify({"error": str(e)}), 500
