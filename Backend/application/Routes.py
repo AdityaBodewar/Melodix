@@ -309,8 +309,7 @@ def myPlaylists():
     
 
 # ------------------- FIX: SECRET MUST BE STRING -------------------
-secret = "mysecretkey123"     #  Make sure this is NOT bytes
-
+secret = "mysecretkey123"
 
 @app.route("/login_flutter", methods=['POST'])
 def login_flutter():
@@ -323,19 +322,22 @@ def login_flutter():
         email = data.get('Email')
         password = data.get('Password')
 
-        # read database
+        # Read DB
         user = db.Users.find_one({"Email": email})
         artist = db.Artist.find_one({"Email": email})
         admin = db.Admin.find_one({"Email": email})
 
-        # ---------------- TOKEN CREATION FUNCTION (FULLY FIXED) ----------------
-        def generate_token(role):
-            payload = {"Email": email, "Role": role}
+        # ---------------- TOKEN CREATOR ----------------
+        def generate_token(role, user_obj):
+            payload = {
+                "Email": email,
+                "Role": role,
+                "user_id": str(user_obj["_id"])   # 🔥 VERY IMPORTANT
+            }
 
-            # FIX → ensure secret is always string
-            token = jwt.encode(payload, str(secret), algorithm="HS256")
+            token = jwt.encode(payload, secret, algorithm="HS256")
 
-            # FIX → ensure returned token is always string
+            # ensure string
             if isinstance(token, bytes):
                 token = token.decode("utf-8")
 
@@ -344,11 +346,13 @@ def login_flutter():
         # ---------------- ADMIN LOGIN ----------------
         if admin:
             if password == admin.get("Password"):
-                token = generate_token("Admin")
+                token = generate_token("Admin", admin)
                 return jsonify({
                     "message": "Admin Login Successfully",
                     "Token": token,
-                    "Role": "Admin"
+                    "Role": "Admin",
+                    "Fullname": admin.get("Fullname"),
+                    "Email": admin.get("Email")
                 }), 200
             else:
                 return jsonify({"message": "wrong Password"}), 401
@@ -356,20 +360,21 @@ def login_flutter():
         # ---------------- ARTIST LOGIN ----------------
         if artist:
             if password == artist.get("Password"):
-                token = generate_token("Artist")
+                token = generate_token("Artist", artist)
                 return jsonify({
-                "message": "Artist Login Successfully",
-                "Token": token,
-                "Role": "Artist",
-                "Fullname": artist.get("Fullname"),
-                "Email": artist.get("Email")
-}), 200
+                    "message": "Artist Login Successfully",
+                    "Token": token,
+                    "Role": "Artist",
+                    "Fullname": artist.get("Fullname"),
+                    "Email": artist.get("Email")
+                }), 200
+            else:
+                return jsonify({"message": "wrong Password"}), 401
 
-
-       # ---------------- USER LOGIN ----------------
+        # ---------------- USER LOGIN ----------------
         if user:
             if password == user.get("Password"):
-                token = generate_token("User")
+                token = generate_token("User", user)
                 return jsonify({
                     "message": "User Login Successfully",
                     "Token": token,
@@ -380,79 +385,24 @@ def login_flutter():
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
-
         # ---------------- EMAIL NOT FOUND ----------------
         return jsonify({"message": "Email not registered"}), 401
 
     except Exception as e:
-        print("LOGIN ERROR:", e)     #  Shows real error in terminal
+        print("LOGIN ERROR:", e)
         return jsonify({"error": str(e)}), 500
-    
-    @app.route("/update_profile", methods=['POST'])
-    def update_profile():
-                try:
-                        old_email = request.form.get("OldEmail")     # identity of user
-                        fullname = request.form.get("Fullname")
-                        new_email = request.form.get("NewEmail")
-                        role = request.form.get("Role")              # User / Artist / Admin
 
-                        image = request.files.get("Image")
+@app.route("/getAllArtist",methods = ['GET'])
+def getAllArtist():
+    try:
+        artist = list(db.Artist.find())
 
-                        # ---------- VALIDATION ----------
-                        if not old_email:
-                            return jsonify({"message": "Old Email is required"}), 401
 
-                        if not role:
-                            return jsonify({"message": "Role is required"}), 401
+        for music in artist:
+            music["_id"]=str(music["_id"])
 
-                        # ---------- COLLECTION SELECT ----------
-                        if role == "User":
-                            collection = db.Users
-                        elif role == "Artist":
-                            collection = db.Artist
-                        elif role == "Admin":
-                            collection = db.Admin
-                        else:
-                            return jsonify({"message": "Invalid role"}), 400
+        
 
-                        # ---------- FIND USER ----------
-                        user = collection.find_one({"Email": old_email})
-                        if not user:
-                            return jsonify({"message": "User not found"}), 404
-
-                        # ---------- BUILD UPDATE ----------
-                        update_data = {}
-
-                        if fullname:
-                            update_data["Fullname"] = fullname
-
-                        if new_email:
-                            update_data["Email"] = new_email
-
-                        # ---------- UPLOAD IMAGE ----------
-                        if image:
-                            img = cloudinary.uploader.upload(
-                                image,
-                                resource_type="image",
-                                folder="ProfileImages"
-                            )
-                            update_data["Image"] = img["secure_url"]
-
-                        # ---------- UPDATE DB ----------
-                        collection.update_one(~
-                            {"Email": old_email},
-                            {"$set": update_data}
-                        )
-
-                        updated_user = collection.find_one({"Email": new_email or old_email})
-                        updated_user["_id"] = str(updated_user["_id"])
-
-                        return jsonify({
-                            "message": "Profile updated successfully",
-                            "data": updated_user
-                        }), 200
-
-                except Exception as e:
-                            print("UPDATE PROFILE ERROR:", e)   
-
-                            return jsonify({"error": str(e)}), 500
+        return jsonify({"message":"Return successfull","artist":artist}),200
+    except Exception as e:
+        return jsonify({"error":str(e)})
