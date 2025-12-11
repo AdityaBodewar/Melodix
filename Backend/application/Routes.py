@@ -5,6 +5,8 @@ import cloudinary.uploader
 import jwt
 from fuzzywuzzy import fuzz
 import os
+from bson.objectid import ObjectId
+
 
 secret=os.getenv("SECRET_KEY")
 
@@ -154,7 +156,8 @@ def login():
 
         if check_Admin_if_Registered:
             if data.get('Email') == check_Admin_if_Registered.get('Email') and data.get('Password')== check_Admin_if_Registered.get('Password'):
-                payload={"Email":data.get('Email'),"Role":"Admin"}
+                user=db.Admin.find_one({"Email":data.get("Email")})
+                payload={"Email":data.get('Email'),"Role":"Admin","user_id":str(user["_id"])}
                 token=jwt.encode(payload,secret,algorithm="HS256")
                 return jsonify({"message":"Admin Login Successfully","Token":token,"Role":"Admin"}),200
             else:
@@ -162,14 +165,16 @@ def login():
    
         elif check_Artist_if_Registered:
             if data.get('Email') == check_Artist_if_Registered.get('Email') and data.get('Password')== check_Artist_if_Registered.get('Password'):
-                payload={"Email":data.get('Email'),"Role":"Artist"}
+                user=db.Artist.find_one({"Email":data.get("Email")})
+                payload={"Email":data.get('Email'),"Role":"Artist","user_id":str(user["_id"])}
                 token=jwt.encode(payload,secret,algorithm="HS256")
                 return jsonify({"message":"Artist Login successfully ","Token":token,"Role":"Artist"}),200
             else:
                 return jsonify({"error":"wrong Password"}),401
         elif check_user_if_Registerd :
             if data.get('Email') == check_user_if_Registerd.get('Email') and data.get('Password')== check_user_if_Registerd.get('Password'):
-                payload={"Email":data.get('Email'),"Role":"User"}
+                user=db.Users.find_one({"Email":data.get("Email")})
+                payload={"Email":data.get('Email'),"Role":"User","user_id":str(user["_id"])}
                 token=jwt.encode(payload,secret,algorithm="HS256")
                 return jsonify({"message":"User Login Successfully","Token":token,"Role":"User"}),200
             else:
@@ -178,3 +183,126 @@ def login():
             return jsonify({"message":"Email not registered "}),401
     except Exception as e:
         return jsonify({"error":str(e)})
+    
+
+@app.route("/createPlaylist", methods=["POST"])
+def createPlaylist():
+    try:
+        data = request.get_json()
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return jsonify({"error": "Missing token"}), 401
+
+       
+        try:
+            token = auth_header.split(" ")[1]
+        except:
+            return jsonify({"error": "Invalid token format"}), 401
+
+       
+        try:
+            decoded = jwt.decode(token, secret, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+
+        user_id_str = decoded.get("user_id")
+        if not user_id_str:
+            return jsonify({"error": "Invalid payload"}), 400
+
+        user_id = ObjectId(user_id_str)
+
+        playlist_name = data.get("playlist_name")
+        if not playlist_name:
+            return jsonify({"error": "Playlist name required"}), 400
+
+        result = db.Playlists.insert_one({
+            "user_id": user_id,
+            "playlist_name": playlist_name,
+            "songs": []
+        })
+
+        return jsonify({
+            "message": "Playlist created successfully",
+            "playlist_id": str(result.inserted_id),
+            "owner_id": user_id_str
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/addSongToPlaylist", methods=["POST"])
+def addSongToPlaylist():
+    try:
+        data = request.get_json()
+        auth_header = request.headers.get("Authorization")
+
+        if not auth_header:
+            return jsonify({"error": "Missing token"}), 401
+
+        token = auth_header.split(" ")[1]
+        decoded = jwt.decode(token, secret, algorithms=["HS256"])
+        user_id = ObjectId(decoded.get("user_id"))
+
+        playlist_id = data.get("playlist_id")
+        song_id = data.get("song_id")
+        if not playlist_id or not song_id:
+            return jsonify({"error": "playlist_id and song_id required"}), 400
+
+        playlist_obj_id = ObjectId(playlist_id)
+        song_obj_id = ObjectId(song_id)
+
+        playlist = db.Playlists.find_one({"_id": playlist_obj_id})
+        if not playlist:
+            return jsonify({"error": "Playlist not found"}), 404
+
+        if playlist["user_id"] != user_id:
+            return jsonify({"error": "Cannot edit someone else's playlist"}), 403
+
+        # Avoid duplicates
+        if song_obj_id in playlist.get("songs", []):
+            return jsonify({"message": "Song already in playlist"}), 200
+
+        db.Playlists.update_one(
+            {"_id": playlist_obj_id},
+            {"$push": {"songs": song_obj_id}}
+        )
+
+        return jsonify({
+            "message": "Song added successfully",
+            "playlist_id": playlist_id,
+            "song_id": song_id
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/myPlaylists", methods=["GET"])
+def myPlaylists():
+    try:
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            return jsonify({"error": "Missing token"}), 401
+
+        token = auth_header.split(" ")[1]
+        decoded = jwt.decode(token, secret, algorithms=["HS256"])
+        user_id = ObjectId(decoded.get("user_id"))
+
+        playlists = db.Playlists.find({"user_id": user_id})
+
+        playlist_list = []
+        for p in playlists:
+            playlist_list.append({
+                "playlist_id": str(p["_id"]),
+                "playlist_name": p["playlist_name"],
+                "song_count": len(p.get("songs", []))
+            })
+
+        return jsonify({"playlists": playlist_list}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
