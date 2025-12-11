@@ -12,6 +12,7 @@ import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/SongPlayerPage.dart';
 import 'package:frontend/adminPanel/AddMusicForm.dart';
+import 'package:frontend/artist_songs_page.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
 import 'package:frontend/adminPanel/adminloginpage.dart';
 import 'package:frontend/main_screen.dart';
@@ -27,11 +28,17 @@ class _HomePageState extends State<HomePage> {
   final PageController _bannerController = PageController();
 
   List<dynamic> topSongs = [];
+  List<dynamic> artists = [];
+
   bool isLoading = true;
   Future<void> loadSongs() async {
     setState(() {
       isLoading = true;
     });
+
+
+
+
 
     //  Clear previous songs to avoid duplicates
     topSongs.clear();
@@ -47,6 +54,10 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  Future<void> loadArtists() async {
+    artists = await ApiService.getAllArtists();
+    setState(() {});
+  }
 
 
   List<Map<String, String>> banners = [
@@ -65,6 +76,8 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadSongs();
+    loadArtists();
+
 
     Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_bannerController.hasClients) {
@@ -80,6 +93,8 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -557,32 +572,32 @@ class _HomePageState extends State<HomePage> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: topSongs.length,
+            itemCount: artists.length,
             itemBuilder: (context, index) {
-              final song = topSongs[index];
+              final artist = artists[index];
+
               return InkWell(
                 onTap: () {
+
                   Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SongPlayerPage(
-                        songs: topSongs,
-                        currentIndex: index,
-                      ),
-                    ),
-                  );
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => ArtistSongsPage(artistId: artist["artist_id"], artistName: artist["name"]),
+                      ),);
                 },
-                child: _buildArtistCard(song),
+                child: _buildArtistCard(artist),
               );
             },
           ),
         )
+
       ],
     );
   }
 
-  Widget _buildArtistCard(dynamic song) {
+  Widget _buildArtistCard(dynamic artist) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+
     return Container(
       width: 120,
       margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -590,7 +605,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           ClipOval(
             child: Image.network(
-              song["Image"],
+              artist["image"],
               height: 120,
               width: 120,
               fit: BoxFit.cover,
@@ -598,13 +613,12 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 8),
           Text(
-            song["Singer"],
+            artist["name"],
             style: TextStyle(
               color: textColor,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
-            textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -612,4 +626,5 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
 }
