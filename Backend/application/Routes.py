@@ -460,4 +460,21 @@ def getSongsByArtist(artist_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/artists", methods=["GET"])
+def get_artists():
+    try:
+        all_artists = list(db.Artist.find({}, {"Password": 0}))  # hide password
 
+        artists_list = []
+
+        for a in all_artists:
+            artists_list.append({
+                "artist_id": str(a["_id"]),
+                "name": a.get("Fullname", "Unknown Artist"),
+                "image": a.get("Image", "https://via.placeholder.com/150"),  # fallback image
+            })
+
+        return jsonify({"artists": artists_list}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
