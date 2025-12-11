@@ -578,13 +578,12 @@ class _HomePageState extends State<HomePage> {
 
               return InkWell(
                 onTap: () {
-
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => ArtistSongsPage(
-                        artistId: artist["_id"],                // 🔥 backend field
-                        artistName: artist["Fullname"],         // 🔥 backend field
+                        artistId: artist["artist_id"] ?? "",
+                        artistName: artist["name"] ?? "Unknown Artist",
                       ),
                     ),
                   );
@@ -595,12 +594,17 @@ class _HomePageState extends State<HomePage> {
           ),
         )
 
+
       ],
     );
   }
 
   Widget _buildArtistCard(dynamic artist) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+
+    // Safe values
+    final artistName = artist["name"] ?? "Unknown Artist";
+    final artistImage = artist["image"] ?? "";  // could be null or empty
 
     return Container(
       width: 120,
@@ -609,28 +613,38 @@ class _HomePageState extends State<HomePage> {
         children: [
           ClipOval(
             child: Image.network(
-              "https://via.placeholder.com/150",   // 🔥 क्योंकि API image नहीं देता
+              artistImage.isNotEmpty ? artistImage : "https://via.placeholder.com/150",
               height: 120,
               width: 120,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Image.network(
+                  "https://via.placeholder.com/150",
+                  height: 120,
+                  width: 120,
+                  fit: BoxFit.cover,
+                );
+              },
             ),
           ),
           const SizedBox(height: 8),
 
           Text(
-            artist["Fullname"] ?? "Unknown Artist",   // 🔥 सही field
+            artistName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: textColor,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
+
 
 
 }
