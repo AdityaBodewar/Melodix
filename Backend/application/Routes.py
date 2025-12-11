@@ -13,6 +13,20 @@ secret=os.getenv("SECRET_KEY")
 @app.route("/addmusic",methods=['POST'])
 def addmusic():
     try:
+          # Get artist_id from JWT Token
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            return jsonify({"error": "Missing token"}), 401
+        
+        token = auth_header.split(" ")[1]
+        decoded = jwt.decode(token, secret, algorithms=["HS256"])
+
+        if decoded.get("Role") != "Artist":
+            return jsonify({"error": "Only Artist can upload songs"}), 403
+        
+        artist_id = decoded.get("user_id")
+
+
         title=request.form.get("title")
         singer=request.form.get("singer")
         language=request.form.get("language")
@@ -23,7 +37,7 @@ def addmusic():
         img_result=cloudinary.uploader.upload(image,resource_type="image",folder="Melodix_images")
         audio_result=cloudinary.uploader.upload(audio,resource_type="video",folder="Melodix_Songs")
 
-        data={"Title":title,"Singer":singer,"Language":language,"Type":type,"Image":img_result["secure_url"],"Song":audio_result["secure_url"]}
+        data={"Title":title,"Singer":singer,"Language":language,"Type":type,"Image":img_result["secure_url"],"Song":audio_result["secure_url"] ,"artist_id": artist_id }
         
         result=db.Songs.insert_one(data)
 
@@ -406,3 +420,44 @@ def getAllArtist():
         return jsonify({"message":"Return successfull","artist":artist}),200
     except Exception as e:
         return jsonify({"error":str(e)})
+    
+#round artist img and title show 
+    
+@app.route("/artists", methods=["GET"])
+def getArtists():
+    try:
+        artists = list(db.Artist.find({}, {"Password": 0}))  # don't send password
+
+        result = []
+        for a in artists:
+            result.append({
+                "artist_id": str(a["_id"]),
+                "name": a["Fullname"],
+                "type": a.get("Type", ""),
+                "image": a.get("Image", "https://cdn-icons-png.flaticon.com/512/1077/1077012.png")  
+            })
+
+        return jsonify({"artists": result}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+ # in artitst page show all song    
+@app.route("/artist/<artist_id>/songs", methods=["GET"])
+def getSongsByArtist(artist_id):
+    try:
+        songs = list(db.Songs.find({"artist_id": artist_id}))
+
+        for s in songs:
+            s["_id"] = str(s["_id"])
+
+        return jsonify({
+            "artist_id": artist_id,
+            "songs": songs
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
