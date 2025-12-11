@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ThemeController {
   static ValueNotifier<ThemeMode> themeMode = ValueNotifier(ThemeMode.system);
 
-  // Change theme
   static void setTheme(ThemeMode mode) async {
     themeMode.value = mode;
 
@@ -12,7 +11,6 @@ class ThemeController {
     await prefs.setString("theme", mode.name);
   }
 
-  // Toggle Theme Light <-> Dark
   static void toggleTheme() {
     if (themeMode.value == ThemeMode.dark) {
       setTheme(ThemeMode.light);
@@ -21,7 +19,6 @@ class ThemeController {
     }
   }
 
-  // LOAD saved theme when app starts
   static Future<void> loadTheme() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String saved = prefs.getString("theme") ?? "system";
