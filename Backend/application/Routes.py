@@ -13,20 +13,6 @@ secret=os.getenv("SECRET_KEY")
 @app.route("/addmusic",methods=['POST'])
 def addmusic():
     try:
-          # Get artist_id from JWT Token
-        auth_header = request.headers.get("Authorization")
-        if not auth_header:
-            return jsonify({"error": "Missing token"}), 401
-        
-        token = auth_header.split(" ")[1]
-        decoded = jwt.decode(token, secret, algorithms=["HS256"])
-
-        if decoded.get("Role") != "Artist":
-            return jsonify({"error": "Only Artist can upload songs"}), 403
-        
-        artist_id = decoded.get("user_id")
-
-
         title=request.form.get("title")
         singer=request.form.get("singer")
         language=request.form.get("language")
@@ -37,7 +23,7 @@ def addmusic():
         img_result=cloudinary.uploader.upload(image,resource_type="image",folder="Melodix_images")
         audio_result=cloudinary.uploader.upload(audio,resource_type="video",folder="Melodix_Songs")
 
-        data={"Title":title,"Singer":singer,"Language":language,"Type":type,"Image":img_result["secure_url"],"Song":audio_result["secure_url"] ,"artist_id": artist_id }
+        data={"Title":title,"Singer":singer,"Language":language,"Type":type,"Image":img_result["secure_url"],"Song":audio_result["secure_url"]}
         
         result=db.Songs.insert_one(data)
 
