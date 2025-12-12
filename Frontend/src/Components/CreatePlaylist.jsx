@@ -1,0 +1,121 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+
+const CreatePlaylist = () => {
+  const [playlists, setPlaylists] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [showModal, setShowModal] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchPlaylists();
+  }, []);
+
+  const fetchPlaylists = async () => {
+    try {
+      const token = localStorage.getItem("Token");
+      const res = await axios.get("http://localhost:5000/myPlaylists", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setPlaylists(res.data.playlists);
+    } catch (err) {
+      setMessage("Error fetching playlists");
+    }
+  };
+
+  const handleCreatePlaylist = async () => {
+    if (!newPlaylistName) {
+      setMessage("Playlist name is required");
+      return;
+    }
+    setLoading(true);
+    setMessage("");
+    try {
+      const token = localStorage.getItem("Token");
+      const res = await axios.post(
+        "http://localhost:5000/createPlaylist",
+        { playlist_name: newPlaylistName },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      setMessage(res.data.message);
+      setNewPlaylistName("");
+      setShowModal(false);
+
+      // Redirect to PlaylistDetails page of newly created playlist
+      navigate(`/playlist/${res.data.playlist_id}`);
+
+      fetchPlaylists();
+    } catch (err) {
+      setMessage(err.response?.data?.error || "Error creating playlist");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="p-4">
+      <div className="flex flex-col justify-between items-center mb-4">
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+        >
+          Add Playlist
+        </button>
+        <h2 className="text-xl font-bold mt-5">Your Playlists</h2>
+      </div>
+
+      <div className="flex flex-col space-y-4">
+        {playlists.length > 0 ? (
+          playlists.map((pl) => (
+            <div
+              key={pl.playlist_id}
+              onClick={() => navigate(`/playlist/${pl.playlist_id}`)}
+              className="border rounded-full w-22 h-22 p-4 shadow cursor-pointer hover:bg-gray-200 transition"
+            >
+              <h3 className="font-bold text-[13px]">{pl.playlist_name}</h3>
+            </div>
+          ))
+        ) : (
+          <p>No playlists found</p>
+        )}
+      </div>
+
+      {showModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded shadow w-96">
+            <h2 className="text-lg font-bold mb-2">Create Playlist</h2>
+            <input
+              type="text"
+              placeholder="Playlist Name"
+              value={newPlaylistName}
+              onChange={(e) => setNewPlaylistName(e.target.value)}
+              className="border p-2 w-full mb-4"
+            />
+            <div className="flex justify-end space-x-2">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreatePlaylist}
+                disabled={loading}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              >
+                {loading ? "Creating..." : "Create"}
+              </button>
+            </div>
+            {message && <p className="mt-2 text-red-500">{message}</p>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CreatePlaylist;
