@@ -12,7 +12,6 @@ import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/SongPlayerPage.dart';
 import 'package:frontend/adminPanel/AddMusicForm.dart';
-import 'package:frontend/artist_songs_page.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
 import 'package:frontend/adminPanel/adminloginpage.dart';
 import 'package:frontend/main_screen.dart';
@@ -54,10 +53,6 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
-  Future<void> loadArtists() async {
-    artists = await ApiService.getAllArtists();
-    setState(() {});
-  }
 
 
   List<Map<String, String>> banners = [
@@ -76,7 +71,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadSongs();
-    loadArtists();
 
 
     Timer.periodic(const Duration(seconds: 3), (timer) {
@@ -568,31 +562,30 @@ class _HomePageState extends State<HomePage> {
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 160,
+          height: 200,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: artists.length,
+            itemCount: topSongs.length,
             itemBuilder: (context, index) {
-              final artist = artists[index];
-
+              final song = topSongs[index];
               return InkWell(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => ArtistSongsPage(
-                        artistId: artist["artist_id"] ?? "",
-                        artistName: artist["name"] ?? "Unknown Artist",
+                      builder: (_) => SongPlayerPage(
+                        songs: topSongs,
+                        currentIndex: index,
                       ),
                     ),
                   );
                 },
-                child: _buildArtistCard(artist),
+                child: _buildArtistCard(artists),
               );
             },
           ),
-        )
+        ),
 
 
       ],
@@ -602,9 +595,6 @@ class _HomePageState extends State<HomePage> {
   Widget _buildArtistCard(dynamic artist) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
 
-    // Safe values
-    final artistName = artist["name"] ?? "Unknown Artist";
-    final artistImage = artist["image"] ?? "";  // could be null or empty
 
     return Container(
       width: 120,
@@ -612,34 +602,11 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         children: [
           ClipOval(
-            child: Image.network(
-              artistImage.isNotEmpty ? artistImage : "https://via.placeholder.com/150",
-              height: 120,
-              width: 120,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return Image.network(
-                  "https://via.placeholder.com/150",
-                  height: 120,
-                  width: 120,
-                  fit: BoxFit.cover,
-                );
-              },
-            ),
+
           ),
           const SizedBox(height: 8),
 
-          Text(
-            artistName,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+
         ],
       ),
     );

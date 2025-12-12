@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
-import 'package:frontend/EditProfilePage.dart';
 import 'package:frontend/HelpSupportPage.dart';
 import 'package:frontend/LoginPage.dart';
 import 'package:frontend/PrivacyPage.dart';
@@ -133,10 +132,10 @@ class _ProfileScreenState extends State<Profilepage> {
               }
 
               // ✔ User is logged in → allow Edit
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const EditProfilePage()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (_) => const ()),
+              // );
             }),
 
 

@@ -16,12 +16,6 @@ class ApiService {
   static const String registerArtistUrl = "$baseUrl/registerArtist";
   static const String loginUrl = "$baseUrl/login_flutter";
 
-  // NEW PROFILE UPDATE API
-  static const String updateProfileUrl = "$baseUrl/update_profile";
-
-  // ARTIST APIS
-  static const String getArtistsUrl = "$baseUrl/artists";
-  static const String getArtistSongsUrl = "$baseUrl/artist";  // /artist/<id>/songs
 
 
   // UPLOAD MUSIC (ADMIN)
@@ -187,34 +181,34 @@ class ApiService {
     }
   }
 
-  static Future<Map<String, dynamic>> updateProfile({
-    required String oldEmail,
-    required String fullname,
-    required String newEmail,
-    required String role,
-    String? imagePath,
-  }) async {
-    var request = http.MultipartRequest("POST", Uri.parse(updateProfileUrl));
-
-    request.fields["OldEmail"] = oldEmail;
-    request.fields["Fullname"] = fullname;
-    request.fields["NewEmail"] = newEmail;
-    request.fields["Role"] = role;
-
-    if (imagePath != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath("Image", imagePath),
-      );
-    }
-
-    var response = await request.send();
-    var body = await response.stream.bytesToString();
-
-    return {
-      "status": response.statusCode,
-      "data": json.decode(body),
-    };
-  }
+  // static Future<Map<String, dynamic>> updateProfile({
+  //   required String oldEmail,
+  //   required String fullname,
+  //   required String newEmail,
+  //   required String role,
+  //   String? imagePath,
+  // }) async {
+  //   // var request = http.MultipartRequest("POST", Uri.parse(updateProfileUrl));
+  //
+  //   // request.fields["OldEmail"] = oldEmail;
+  //   // request.fields["Fullname"] = fullname;
+  //   // request.fields["NewEmail"] = newEmail;
+  //   // request.fields["Role"] = role;
+  //   //
+  //   // if (imagePath != null) {
+  //   //   request.files.add(
+  //   //     await http.MultipartFile.fromPath("Image", imagePath),
+  //   //   );
+  //   // }
+  //   //
+  //   // var response = await request.send();
+  //   // var body = await response.stream.bytesToString();
+  //   //
+  //   // return {
+  //   //   "status": response.statusCode,
+  //   //   "data": json.decode(body),
+  //   // };
+  // }
 
 // Create playlist
   static Future<Map<String, dynamic>> createPlaylist({
@@ -282,41 +276,5 @@ class ApiService {
     };
   }
 
-  static Future<List<dynamic>> getAllArtists() async {
-    Dio dio = Dio();
-
-    try {
-      Response res = await dio.get(getArtistsUrl);
-
-      if (res.statusCode == 200) {
-        return res.data["artists"];
-      }
-    } catch (e) {
-      print("Artist fetch error: $e");
-    }
-
-    return [];
-  }
-
-  //Get Songs of a Particular Artist
-
-  static Future<Map<String, dynamic>> getArtistSongs(String artistId) async {
-    Dio dio = Dio();
-
-    try {
-      Response res = await dio.get("$getArtistSongsUrl/$artistId/songs");
-
-      return {
-        "status": res.statusCode,
-        "data": res.data,
-      };
-    } catch (e) {
-      print("Artist songs error: $e");
-      return {
-        "status": 500,
-        "data": {"error": "Something went wrong"}
-      };
-    }
-  }
 
 }
