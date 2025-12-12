@@ -308,7 +308,6 @@ def myPlaylists():
         return jsonify({"error": str(e)}), 500
     
 
-# ------------------- FIX: SECRET MUST BE STRING -------------------
 secret = "mysecretkey123"
 
 @app.route("/login_flutter", methods=['POST'])
@@ -322,28 +321,25 @@ def login_flutter():
         email = data.get('Email')
         password = data.get('Password')
 
-        # Read DB
         user = db.Users.find_one({"Email": email})
         artist = db.Artist.find_one({"Email": email})
         admin = db.Admin.find_one({"Email": email})
 
-        # ---------------- TOKEN CREATOR ----------------
         def generate_token(role, user_obj):
             payload = {
                 "Email": email,
                 "Role": role,
-                "user_id": str(user_obj["_id"])   # 🔥 VERY IMPORTANT
+                "user_id": str(user_obj["_id"])  
             }
 
             token = jwt.encode(payload, secret, algorithm="HS256")
 
-            # ensure string
             if isinstance(token, bytes):
                 token = token.decode("utf-8")
 
             return token
 
-        # ---------------- ADMIN LOGIN ----------------
+        
         if admin:
             if password == admin.get("Password"):
                 token = generate_token("Admin", admin)
@@ -357,7 +353,6 @@ def login_flutter():
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
-        # ---------------- ARTIST LOGIN ----------------
         if artist:
             if password == artist.get("Password"):
                 token = generate_token("Artist", artist)
@@ -371,7 +366,6 @@ def login_flutter():
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
-        # ---------------- USER LOGIN ----------------
         if user:
             if password == user.get("Password"):
                 token = generate_token("User", user)
@@ -385,7 +379,6 @@ def login_flutter():
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
-        # ---------------- EMAIL NOT FOUND ----------------
         return jsonify({"message": "Email not registered"}), 401
 
     except Exception as e:
@@ -406,3 +399,61 @@ def getAllArtist():
         return jsonify({"message":"Return successfull","artist":artist}),200
     except Exception as e:
         return jsonify({"error":str(e)})
+    
+    
+@app.route("/artists", methods=["GET"])
+def getArtists():
+    try:
+        # dont send pass
+        artists = list(db.Artist.find({}, {"Password": 0})) 
+
+        result = []
+        for a in artists:
+            result.append({
+                "artist_id": str(a["_id"]),
+                "name": a["Fullname"],
+                "type": a.get("Type", ""),
+                "image": a.get("Image", "https://cdn-icons-png.flaticon.com/512/1077/1077012.png")  
+            })
+
+        return jsonify({"artists": result}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+    
+@app.route("/artist/<artist_id>/songs", methods=["GET"])
+def getSongsByArtist(artist_id):
+    try:
+        songs = list(db.Songs.find({"artist_id": artist_id}))
+
+        for s in songs:
+            s["_id"] = str(s["_id"])
+
+        return jsonify({
+            "artist_id": artist_id,
+            "songs": songs
+        }), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/artists", methods=["GET"])
+def get_artists():
+    try:
+        all_artists = list(db.Artist.find({}, {"Password": 0})) 
+
+        artists_list = []
+
+        for a in all_artists:
+            artists_list.append({
+                "artist_id": str(a["_id"]),
+                "name": a.get("Fullname", "Unknown Artist"),
+                "image": a.get("Image", "https://via.placeholder.com/150"), 
+            })
+
+        return jsonify({"artists": artists_list}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
