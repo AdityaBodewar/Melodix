@@ -1,11 +1,11 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-import Player from "./Player";
 import { useNavigate } from "react-router-dom"; 
+import { useAudio } from "../ContextProvider/AudioContext";
 
 const GetAllMusic = () => {
   const [song, setSong] = useState([]);
-  const navigate=useNavigate();
+const { playSong } = useAudio();
 
   useEffect(() => {
     axios
@@ -14,10 +14,7 @@ const GetAllMusic = () => {
       .catch((err) => console.log(err));
   }, []);
 
-const handlePlayClick = (song) => {
-    // Navigate to PlayerPage and pass song via state
-    navigate("/player", { state: { song, autoplay: true } });
-  };
+
 
   return (
     <div className="flex gap-4">
@@ -33,7 +30,7 @@ const handlePlayClick = (song) => {
             />
 
             <button
-              onClick={() => handlePlayClick(item)}
+              onClick={() => playSong(item)}
               className="absolute bottom-2 right-2 bg-green-600 text-white w-10 h-10 rounded-full opacity-0 group-hover:opacity-100 transition"
             >
               ▶

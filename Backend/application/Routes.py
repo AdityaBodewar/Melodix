@@ -6,6 +6,8 @@ import jwt
 from fuzzywuzzy import fuzz
 import os
 from bson.objectid import ObjectId
+from bson.json_util import dumps
+import json
 
 
 secret=os.getenv("SECRET_KEY")
@@ -14,18 +16,29 @@ secret=os.getenv("SECRET_KEY")
 def addmusic():
     try:
         title=request.form.get("title")
-        singer=request.form.get("singer")
+      
         language=request.form.get("language")
         type=request.form.get("type")
         image=request.files.get("image")
         audio=request.files.get("audio")
-
+        auth_header= request.headers.get('Authorization')
         img_result=cloudinary.uploader.upload(image,resource_type="image",folder="Melodix_images")
         audio_result=cloudinary.uploader.upload(audio,resource_type="video",folder="Melodix_Songs")
+        
+        token = auth_header.split(" ")[1]
 
+       
+        decoded = jwt.decode(
+            token,
+            secret,
+            algorithms=["HS256"]
+        )  
+        artist=db.Artist.find_one({"Email":decoded['Email']})
+        singer=artist['Username']
         data={"Title":title,"Singer":singer,"Language":language,"Type":type,"Image":img_result["secure_url"],"Song":audio_result["secure_url"]}
         
         result=db.Songs.insert_one(data)
+        check=db.Artist.update_one({"_id":artist['_id']},{"$push":{"SongsCreated":result.inserted_id}})
 
         inserted_doc=db.Songs.find_one({"_id":result.inserted_id})
         inserted_doc["_id"] = str(inserted_doc["_id"])
@@ -108,6 +121,7 @@ def RegisterUser():
         else :
             if already_registered_Username:
                 return jsonify({"message":"Username already Registered"}),401
+        user['Profile']="https://res.cloudinary.com/dlkvtlln0/image/upload/v1765517183/profile_melodix_ry44ei.webp"
         check=db.Users.insert_one(user)
 
         inserted_data=db.Users.find_one({"_id":check.inserted_id})
@@ -133,6 +147,8 @@ def registerArtist():
         else :
             if already_registered_Username:
                 return jsonify({"message":"Username already Registered"}),401
+        artist['Profile']="https://res.cloudinary.com/dlkvtlln0/image/upload/v1765517183/profile_melodix_ry44ei.webp"
+        artist['SongsCreated']=[]
         check=db.Artist.insert_one(artist)
 
         inserted_data=db.Artist.find_one({'_id':check.inserted_id})
@@ -306,9 +322,95 @@ def myPlaylists():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-    
 
-secret = "mysecretkey123"
+
+@app.route("/playlist/<playlist_id>", methods=["GET"])
+def get_playlist(playlist_id):
+    try:
+        auth_header = request.headers.get("Authorization")
+        if not auth_header:
+            return jsonify({"error": "Missing token"}), 401
+
+        try:
+            token = auth_header.split(" ")[1]
+        except:
+            return jsonify({"error": "Invalid token format"}), 401
+
+        try:
+            decoded = jwt.decode(token, secret, algorithms=["HS256"])
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+
+        user_id_str = decoded.get("user_id")
+        if not user_id_str:
+            return jsonify({"error": "Invalid payload"}), 400
+
+        user_id = ObjectId(user_id_str)
+
+        # Find the playlist and ensure it belongs to the logged-in user
+        playlist = db.Playlists.find_one({"_id": ObjectId(playlist_id), "user_id": user_id})
+        if not playlist:
+            return jsonify({"error": "Playlist not found"}), 404
+
+        # Fetch full song details for each song in playlist
+        songs = []
+        for song_id in playlist.get("songs", []):
+            song = db.Songs.find_one({"_id": ObjectId(song_id)})
+            if song:
+                song["_id"] = str(song["_id"])
+                songs.append(song)
+
+        playlist_data = {
+            "playlist_id": str(playlist["_id"]),
+            "playlist_name": playlist.get("playlist_name"),
+            "songs": songs
+        }
+
+        return jsonify({"playlist": playlist_data}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/getallartist",methods=['GET'])
+def getAllArtist():
+    try:
+        artist=list(db.Artist.find())
+
+        artist = json.loads(dumps(artist))
+        return jsonify({"message":"retrived successfully","artist":artist})
+    except Exception as e:
+        return  jsonify({"error":str(e)})
+
+
+@app.route("/getsongofartist/<id>", methods=['GET'])
+def getsongofartist(id):
+    try:
+        artist_id = ObjectId(id)
+
+        artist = db.Artist.find_one({"_id": artist_id})
+        if not artist:
+            return jsonify({"error": "Artist not found"}), 404
+
+        song_ids = artist.get("SongsCreated", [])
+        
+        songs = []
+        for song_id in song_ids:
+            song = db.Songs.find_one({"_id": ObjectId(song_id)})
+            if song:
+                song["_id"] = str(song["_id"])
+                songs.append(song)
+
+        return jsonify({"data": songs}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+# ------------------- FIX: SECRET MUST BE STRING -------------------
+secret = "mysecretkey123"     # 🔥 Make sure this is NOT bytes
+
 
 @app.route("/login_flutter", methods=['POST'])
 def login_flutter():
@@ -321,54 +423,53 @@ def login_flutter():
         email = data.get('Email')
         password = data.get('Password')
 
+        # read database
         user = db.Users.find_one({"Email": email})
         artist = db.Artist.find_one({"Email": email})
         admin = db.Admin.find_one({"Email": email})
 
-        def generate_token(role, user_obj):
-            payload = {
-                "Email": email,
-                "Role": role,
-                "user_id": str(user_obj["_id"])  
-            }
+        # ---------------- TOKEN CREATION FUNCTION (FULLY FIXED) ----------------
+        def generate_token(role):
+            payload = {"Email": email, "Role": role}
 
-            token = jwt.encode(payload, secret, algorithm="HS256")
+            # FIX → ensure secret is always string
+            token = jwt.encode(payload, str(secret), algorithm="HS256")
 
+            # FIX → ensure returned token is always string
             if isinstance(token, bytes):
                 token = token.decode("utf-8")
 
             return token
 
-        
+        # ---------------- ADMIN LOGIN ----------------
         if admin:
             if password == admin.get("Password"):
-                token = generate_token("Admin", admin)
+                token = generate_token("Admin")
                 return jsonify({
                     "message": "Admin Login Successfully",
                     "Token": token,
-                    "Role": "Admin",
-                    "Fullname": admin.get("Fullname"),
-                    "Email": admin.get("Email")
+                    "Role": "Admin"
                 }), 200
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
+        # ---------------- ARTIST LOGIN ----------------
         if artist:
             if password == artist.get("Password"):
-                token = generate_token("Artist", artist)
+                token = generate_token("Artist")
                 return jsonify({
-                    "message": "Artist Login Successfully",
-                    "Token": token,
-                    "Role": "Artist",
-                    "Fullname": artist.get("Fullname"),
-                    "Email": artist.get("Email")
-                }), 200
-            else:
-                return jsonify({"message": "wrong Password"}), 401
+                "message": "Artist Login Successfully",
+                "Token": token,
+                "Role": "Artist",
+                "Fullname": artist.get("Fullname"),
+                "Email": artist.get("Email")
+}), 200
 
+
+       # ---------------- USER LOGIN ----------------
         if user:
             if password == user.get("Password"):
-                token = generate_token("User", user)
+                token = generate_token("User")
                 return jsonify({
                     "message": "User Login Successfully",
                     "Token": token,
@@ -379,81 +480,10 @@ def login_flutter():
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
+
+        # ---------------- EMAIL NOT FOUND ----------------
         return jsonify({"message": "Email not registered"}), 401
 
     except Exception as e:
-        print("LOGIN ERROR:", e)
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/getAllArtist",methods = ['GET'])
-def getAllArtist():
-    try:
-        artist = list(db.Artist.find())
-
-
-        for music in artist:
-            music["_id"]=str(music["_id"])
-
-        
-
-        return jsonify({"message":"Return successfull","artist":artist}),200
-    except Exception as e:
-        return jsonify({"error":str(e)})
-    
-    
-@app.route("/artists", methods=["GET"])
-def getArtists():
-    try:
-        # dont send pass
-        artists = list(db.Artist.find({}, {"Password": 0})) 
-
-        result = []
-        for a in artists:
-            result.append({
-                "artist_id": str(a["_id"]),
-                "name": a["Fullname"],
-                "type": a.get("Type", ""),
-                "image": a.get("Image", "https://cdn-icons-png.flaticon.com/512/1077/1077012.png")  
-            })
-
-        return jsonify({"artists": result}), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    
-
-    
-@app.route("/artist/<artist_id>/songs", methods=["GET"])
-def getSongsByArtist(artist_id):
-    try:
-        songs = list(db.Songs.find({"artist_id": artist_id}))
-
-        for s in songs:
-            s["_id"] = str(s["_id"])
-
-        return jsonify({
-            "artist_id": artist_id,
-            "songs": songs
-        }), 200
-
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route("/artists", methods=["GET"])
-def get_artists():
-    try:
-        all_artists = list(db.Artist.find({}, {"Password": 0})) 
-
-        artists_list = []
-
-        for a in all_artists:
-            artists_list.append({
-                "artist_id": str(a["_id"]),
-                "name": a.get("Fullname", "Unknown Artist"),
-                "image": a.get("Image", "https://via.placeholder.com/150"), 
-            })
-
-        return jsonify({"artists": artists_list}), 200
-
-    except Exception as e:
+        print("LOGIN ERROR:", e)     # 🔥 Shows real error in terminal
         return jsonify({"error": str(e)}), 500

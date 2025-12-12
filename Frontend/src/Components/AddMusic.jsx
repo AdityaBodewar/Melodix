@@ -4,9 +4,10 @@ import { useState } from 'react';
 
 const AddMusic = () => {
 
-    const [data,setData]=useState({"title":"","singer":"","type":"","language":""});
+    const [data,setData]=useState({"title":"","type":"","language":""});
     const [image,setImage]=useState(null);
     const [audio,setAudio]=useState(null);
+    const token=localStorage.getItem("Token");
 
 const handleChange=(e)=>{
 
@@ -31,7 +32,7 @@ const handleSubmit=async()=>{
 
     try{
    
-        if(!data.title || !data.singer || !data.language || !data.type || !image || !audio)
+        if(!data.title  || !data.language || !data.type || !image || !audio)
         {
             alert("all fields are required");
             return ; 
@@ -47,7 +48,7 @@ const handleSubmit=async()=>{
     formdata.append("audio",audio);
 
 
-  const res=await axios.post("http://localhost:5000/addmusic",formdata,{headers:{"Content-Type":"multipart/form-data",},});
+  const res=await axios.post("http://localhost:5000/addmusic",formdata,{headers:{"Content-Type":"multipart/form-data","Authorization":`Bearer ${token}`},});
 alert(res.data.message);   
 }
     catch(e)
@@ -66,8 +67,8 @@ alert(res.data.message);
   <label className="label">Title</label>
   <input type="text" className="input" placeholder="Title" name='title' value={data.title} onChange={handleChange} required />
 
-  <label className="label">Singer</label>
-  <input type="text" className="input" placeholder="Singer" name='singer' value={data.singer} onChange={handleChange} />
+  {/* <label className="label">Singer</label>
+  <input type="text" className="input" placeholder="Singer" name='singer' value={data.singer} onChange={handleChange} /> */}
 
     <label className="label">Type</label>
   <input type="text" className="input" placeholder="Type" name='type' value={data.type} onChange={handleChange} />
