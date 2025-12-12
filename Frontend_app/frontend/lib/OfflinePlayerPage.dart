@@ -34,7 +34,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
   void initState() {
     super.initState();
 
-    // ✅ If SAME offline song already playing → DO NOT restart
+    //  If SAME offline song already playing → DO NOT restart
     if (MusicController.isOffline == true &&
         MusicController.localFilePath == widget.filePath &&
         MusicController.isPlaying == true)
@@ -69,7 +69,6 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
 
   }
 
-  // 🎵 PLAY SONG
   Future<void> playSong() async {
     try {
       final player = MusicController.player;
@@ -81,7 +80,6 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
       await player.setSource(DeviceFileSource(widget.filePath));
       await player.resume();
 
-      // Update global music controller
       MusicController.title = widget.title;
       MusicController.singer = widget.singer;
       MusicController.image = widget.image;
@@ -122,7 +120,6 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // 📀 IMAGE
           Padding(
             padding: const EdgeInsets.all(16.0),
             child: ClipRRect(
@@ -136,7 +133,6 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
             ),
           ),
 
-          // 🎼 TITLE
           Text(
             widget.title,
             style: TextStyle(
@@ -146,13 +142,11 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
             ),
           ),
 
-          // 🎤 SINGER
           Text(widget.singer,
               style: TextStyle(color: subtitleColor, fontSize: 16)),
 
           const SizedBox(height: 20),
 
-          // 🎚 SEEK BAR
           Slider(
             value: _position.inSeconds.toDouble(),
             max: (_duration.inSeconds == 0 ? 1 : _duration.inSeconds).toDouble(),
@@ -162,7 +156,6 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
             },
           ),
 
-          // ⏳ TIME TEXT
           Text(
             "${formatTime(_position)} / ${formatTime(_duration)}",
             style: TextStyle(color: subtitleColor),
@@ -170,7 +163,6 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
 
           const SizedBox(height: 30),
 
-          // ▶ PLAY / PAUSE
           IconButton(
             iconSize: 60,
             color: textColor,

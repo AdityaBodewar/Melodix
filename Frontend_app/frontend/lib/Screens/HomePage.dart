@@ -3,7 +3,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
+import 'package:frontend/AlbumsPage.dart';
 import 'package:frontend/AllSongsPage.dart';
+import 'package:frontend/DownloadsPage.dart';
 import 'package:frontend/LoginPage.dart';
 import 'package:frontend/Registerpage.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
@@ -31,13 +33,13 @@ class _HomePageState extends State<HomePage> {
       isLoading = true;
     });
 
-    // 🔥 STEP 1: Clear previous songs to avoid duplicates
+    //  Clear previous songs to avoid duplicates
     topSongs.clear();
 
-    // 🔥 STEP 2: Fetch fresh updated list
+    //  Fetch fresh updated list
     final newSongs = await ApiService.fetchAllMusic();
 
-    // 🔥 STEP 3: Replace list
+    //  Replace list
     topSongs = newSongs;
 
     setState(() {
@@ -115,7 +117,7 @@ class _HomePageState extends State<HomePage> {
 
                   final isDark = Theme.of(context).brightness == Brightness.dark;
 
-                  // 👉 IF USER IS LOGGED IN → GO TO PROFILE PAGE
+                  // IF USER IS LOGGED IN  GO TO PROFILE PAGE
                   if (token != null && token.isNotEmpty) {
                     Navigator.push(
                       context,
@@ -124,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                     return;
                   }
 
-                  // 👉 IF NOT LOGGED IN → SHOW LOGIN / REGISTER OPTIONS
+                  //  IF NOT LOGGED IN SHOW LOGIN / REGISTER OPTIONS
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: isDark ? Colors.black : Colors.white,
@@ -210,10 +212,10 @@ class _HomePageState extends State<HomePage> {
       drawer: _buildDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
-          await loadSongs();      // 🔥 reload songs
+          await loadSongs();      //  reload songs
         },
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(), // 🔥 allow scroll & pull even if short
+          physics: const AlwaysScrollableScrollPhysics(), // allow scroll & pull even if short
           padding: const EdgeInsets.only(bottom: 140),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,8 +270,8 @@ class _HomePageState extends State<HomePage> {
           ),
           _buildDrawerItem(Icons.home, 'Home'),
           _buildDrawerItem(Icons.favorite, 'Favorites'),
-          _buildDrawerItem(Icons.playlist_play, 'Playlists'),
-          _buildDrawerItem(Icons.library_music, 'Jio Tunes'),
+          _buildDrawerItem(Icons.album, 'Albums'),
+          _buildDrawerItem(Icons.download_sharp, 'DownloadSong'),
           const Divider(),
           _buildDrawerItem(Icons.settings, 'Settings'),
           _buildDrawerItem(Icons.info, 'About us'),
@@ -298,7 +300,18 @@ class _HomePageState extends State<HomePage> {
             context,
             MaterialPageRoute(builder: (context) => const AboutUsPage()),
           );
+        } else if(title == 'Albums'){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AlbumsPage()),
+          );
+        } else if(title == 'DownloadSong'){
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const DownloadsPage()),
+          );
         }
+
       },
     );
   }

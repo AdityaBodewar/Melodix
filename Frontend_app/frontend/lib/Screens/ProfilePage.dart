@@ -21,7 +21,7 @@ class _ProfileScreenState extends State<Profilepage> {
   String name = "Music Lover";
   String email = "musiclover@example.com";
 
-  bool isProfileLoaded = false; // 🔥 Stops flicker
+  bool isProfileLoaded = false;
 
   Future<void> loadProfileData() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -29,7 +29,7 @@ class _ProfileScreenState extends State<Profilepage> {
     setState(() {
       name = prefs.getString("fullname") ?? "Music Lover";
       email = prefs.getString("email") ?? "musiclover@example.com";
-      isProfileLoaded = true; // 🔥 Now UI can show data
+      isProfileLoaded = true;
     });
   }
 
@@ -43,7 +43,6 @@ class _ProfileScreenState extends State<Profilepage> {
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
 
-    // 🔥 Show loading indicator until SharedPreferences loads
     if (!isProfileLoaded) {
       return Scaffold(
         appBar: AppBar(
@@ -105,14 +104,14 @@ class _ProfileScreenState extends State<Profilepage> {
 
             const SizedBox(height: 30),
 
-            // Options
+
             _buildProfileOption(Icons.edit, 'Edit Profile', () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
 
               String? email = prefs.getString("email");
 
               if (email == null || email.isEmpty) {
-                // ❌ User not logged in
+                // User not logged in
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     content: Text("Please login first to edit profile"),
@@ -184,7 +183,6 @@ class _ProfileScreenState extends State<Profilepage> {
     );
   }
 
-  // ------------------------ Profile Tile Builder ------------------------
   Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
@@ -201,51 +199,50 @@ class _ProfileScreenState extends State<Profilepage> {
     );
   }
 
-  // ------------------------ Edit Profile Dialog ------------------------
-  void _showEditDialog() {
-    TextEditingController nameController = TextEditingController(text: name);
-    TextEditingController emailController = TextEditingController(text: email);
+  // void _showEditDialog() {
+  //   TextEditingController nameController = TextEditingController(text: name);
+  //   TextEditingController emailController = TextEditingController(text: email);
+  //
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return AlertDialog(
+  //         title: const Text('Edit Profile'),
+  //         content: Column(
+  //           mainAxisSize: MainAxisSize.min,
+  //           children: [
+  //             TextField(
+  //               controller: nameController,
+  //               decoration: const InputDecoration(labelText: 'Name'),
+  //             ),
+  //             TextField(
+  //               controller: emailController,
+  //               decoration: const InputDecoration(labelText: 'Email'),
+  //             ),
+  //           ],
+  //         ),
+  //         actions: [
+  //           TextButton(
+  //             onPressed: () => Navigator.pop(context),
+  //             child: const Text('Cancel'),
+  //           ),
+  //           ElevatedButton(
+  //             onPressed: () {
+  //               setState(() {
+  //                 name = nameController.text;
+  //                 email = emailController.text;
+  //               });
+  //               Navigator.pop(context);
+  //             },
+  //             child: const Text('Save'),
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  name = nameController.text;
-                  email = emailController.text;
-                });
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ------------------------ Logout ------------------------
+  // Logout
   void showLogoutConfirmDialog() {
     showDialog(
       context: context,
@@ -260,8 +257,8 @@ class _ProfileScreenState extends State<Profilepage> {
             ),
             ElevatedButton(
               onPressed: () async {
-                Navigator.pop(context); // Close dialog
-                await logoutUser();     // Call logout function
+                Navigator.pop(context);
+                await logoutUser();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,

@@ -65,10 +65,10 @@ class _MainScreenState extends State<MainScreen> {
             ),
           );
 
-          return false; // <-- DO NOT EXIT
+          return false; // DO NOT EXIT
         }
 
-        return true; // <-- EXIT APP
+        return true; //  EXIT APP
       },
 
       child: Scaffold(
@@ -113,12 +113,12 @@ class _MainScreenState extends State<MainScreen> {
       child: BottomNavigationBar(
         currentIndex: _currentIndex,
 
-        // 🔥 Main Logic For Restricting Pages
+        //  Main Logic For Restricting Pages
         onTap: (index) async {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           String? token = prefs.getString("token");
 
-          // 🔥 User is NOT logged in & trying to open My Library (2) or Profile (3)
+          // User is NOT logged in & trying to open My Library or Profile
           if ((index == 2 || index == 3) && (token == null || token.isEmpty)) {
             Navigator.push(
               context,
