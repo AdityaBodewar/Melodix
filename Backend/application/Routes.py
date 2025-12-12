@@ -408,13 +408,13 @@ def getsongofartist(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-# ------------------- FIX: SECRET MUST BE STRING -------------------
-secret = "mysecretkey123"     # 🔥 Make sure this is NOT bytes
+
+secret = "mysecretkey123"     
 
 
 @app.route("/login_flutter", methods=['POST'])
 def login_flutter():
-    try:
+    try:    
         data = request.get_json()
 
         if not data.get('Password') or not data.get('Email'):
@@ -428,20 +428,17 @@ def login_flutter():
         artist = db.Artist.find_one({"Email": email})
         admin = db.Admin.find_one({"Email": email})
 
-        # ---------------- TOKEN CREATION FUNCTION (FULLY FIXED) ----------------
         def generate_token(role):
             payload = {"Email": email, "Role": role}
 
-            # FIX → ensure secret is always string
             token = jwt.encode(payload, str(secret), algorithm="HS256")
 
-            # FIX → ensure returned token is always string
             if isinstance(token, bytes):
                 token = token.decode("utf-8")
 
             return token
 
-        # ---------------- ADMIN LOGIN ----------------
+       
         if admin:
             if password == admin.get("Password"):
                 token = generate_token("Admin")
@@ -453,7 +450,7 @@ def login_flutter():
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
-        # ---------------- ARTIST LOGIN ----------------
+    
         if artist:
             if password == artist.get("Password"):
                 token = generate_token("Artist")
@@ -466,7 +463,7 @@ def login_flutter():
 }), 200
 
 
-       # ---------------- USER LOGIN ----------------
+      
         if user:
             if password == user.get("Password"):
                 token = generate_token("User")
@@ -481,9 +478,9 @@ def login_flutter():
                 return jsonify({"message": "wrong Password"}), 401
 
 
-        # ---------------- EMAIL NOT FOUND ----------------
+       
         return jsonify({"message": "Email not registered"}), 401
 
     except Exception as e:
-        print("LOGIN ERROR:", e)     # 🔥 Shows real error in terminal
+        print("LOGIN ERROR:", e)     
         return jsonify({"error": str(e)}), 500
