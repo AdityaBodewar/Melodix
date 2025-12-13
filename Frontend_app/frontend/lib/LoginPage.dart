@@ -4,6 +4,7 @@ import 'package:frontend/Screens/HomePage.dart';
 import 'package:frontend/adminPanel/adminloginpage.dart';
 import 'package:frontend/Registerpage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'MusicController.dart';
 import 'main_screen.dart';
 
 class LoginPage extends StatefulWidget {
@@ -69,6 +70,9 @@ class _LoginPageState extends State<LoginPage> {
 
 
     if (status == 200) {
+
+      await MusicController.reset();
+
       final role = data["Role"] ?? "";
       final token = data["Token"] ?? "";
 

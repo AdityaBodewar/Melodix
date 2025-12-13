@@ -16,6 +16,10 @@ class ApiService {
   static const String registerArtistUrl = "$baseUrl/registerArtist";
   static const String loginUrl = "$baseUrl/login_flutter";
 
+  // ARTIST APIS
+  static const String getAllArtistUrl = "$baseUrl/getallartist";
+  static const String getSongsOfArtistUrl = "$baseUrl/getsongofartist";
+
 
 
   // UPLOAD MUSIC (ADMIN)
@@ -275,6 +279,37 @@ class ApiService {
       "data": jsonDecode(res.body),
     };
   }
+
+  static Future<List<dynamic>> fetchAllArtists() async {
+    Dio dio = Dio();
+    try {
+      Response res = await dio.get(getAllArtistUrl);
+      if (res.statusCode == 200) {
+        return res.data["artist"];
+      }
+    } catch (e) {
+      print("Artist error: $e");
+    }
+    return [];
+  }
+
+// GET SONGS OF ARTIST
+  static Future<List<dynamic>> fetchSongsOfArtist(String artistId) async {
+    Dio dio = Dio();
+
+    try {
+      Response res = await dio.get("$baseUrl/getsongofartist/$artistId");
+
+      if (res.statusCode == 200) {
+        return res.data["data"] ?? [];
+      }
+    } catch (e) {
+      print("Artist songs error: $e");
+    }
+
+    return [];
+  }
+
 
 
 }

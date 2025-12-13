@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'MusicController.dart';
 import 'Screens/HomePage.dart';
 import 'Screens/SearchPage.dart';
 import 'Screens/ProfilePage.dart';
@@ -22,7 +23,7 @@ Future<void> main() async {
   );
 
   await ThemeController.loadTheme();
-
+  await MusicController.configureAudioSession();
 
   runApp(const MusicApp());
 }
@@ -39,7 +40,6 @@ class MusicApp extends StatelessWidget {
           title: 'Melodix App',
           debugShowCheckedModeBanner: false,
 
-          //  Whole App Theme Controller
           themeMode: mode,
 
           //  LIGHT THEME

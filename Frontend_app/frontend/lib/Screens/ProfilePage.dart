@@ -10,6 +10,8 @@ import 'package:frontend/main_screen.dart';
 import 'package:frontend/theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../MusicController.dart';
+
 class Profilepage extends StatefulWidget {
   const Profilepage({Key? key}) : super(key: key);
 
@@ -110,6 +112,41 @@ class _ProfileScreenState extends State<Profilepage> {
             const SizedBox(height: 30),
 
 
+            if (role == "Artist")
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: ListTile(
+                  tileColor: Colors.blue.withOpacity(0.12), // 🔵 light blue background
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  leading: const Icon(
+                    Icons.library_music,
+                    color: Colors.blue, // 🔵 blue icon
+                  ),
+                  title: const Text(
+                    "Add Song",
+                    style: TextStyle(
+                      color: Colors.blue, // 🔵 blue text
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Colors.blue,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AddMusicForm()),
+                    );
+                  },
+                ),
+              ),
+
+
+
             _buildProfileOption(Icons.edit, 'Edit Profile', () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -178,14 +215,6 @@ class _ProfileScreenState extends State<Profilepage> {
               );
             }),
 
-            // 🔥 Artist Add Song Option
-            if (role == "Artist")
-              _buildProfileOption(Icons.library_music, "Add Song", () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => AddMusicForm()),
-                );
-              }),
 
 
             // LOGOUT
@@ -288,6 +317,9 @@ class _ProfileScreenState extends State<Profilepage> {
 
   Future<void> logoutUser() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    await MusicController.reset();
+
     await prefs.clear();
 
     setState(() {
@@ -295,9 +327,10 @@ class _ProfileScreenState extends State<Profilepage> {
       email = "musiclover@example.com";
     });
 
-    Navigator.push(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const MainScreen()),
+          (route) => false,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
