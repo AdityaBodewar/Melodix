@@ -23,7 +23,6 @@ class SongPlayerPage extends StatefulWidget {
 }
 
 class _SongPlayerPageState extends State<SongPlayerPage> {
-  // final AudioPlayer _player = AudioPlayer();
   final AudioPlayer _player = MusicController.player;
 
 
@@ -43,11 +42,9 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     index = widget.currentIndex;
     currentSong = widget.songs[index];
 
-    // Play only if switching song
     if (MusicController.currentIndex != index) {
       playSong();
     } else {
-      // sync playing state
       setState(() => isPlaying = MusicController.isPlaying);
     }
 
@@ -76,25 +73,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
 
-  // ▶ PLAY SONG
-  // Future<void> playSong() async {
-  //   try {
-  //     await _player.stop();
-  //     await _player.setSourceUrl(currentSong["Song"]);
-  //     await _player.resume();
-  //     setState(() => isPlaying = true);
-  //   } catch (_) {}
-  //
-  //   MusicController.updateSong(
-  //     newTitle: currentSong["Title"],
-  //     newSinger: currentSong["Singer"],
-  //     newImage: currentSong["Image"],
-  //     index: index,
-  //     songList: widget.songs,
-  //   );
-  //
-  //
-  // }
+
   Future<void> playSong() async {
     try {
       await _player.stop();
@@ -103,7 +82,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
       setState(() => isPlaying = true);
 
-      //  UPDATE MUSIC CONTROLLER (MOST IMPORTANT)
       MusicController.updateSong(
         newTitle: currentSong["Title"],
         newSinger: currentSong["Singer"],
@@ -175,13 +153,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     }
   }
 
-  // @override
-  // void dispose() {
-  //   _player.dispose();
-  //   super.dispose();
-  // }
 
-  // TIME FORMATTER
   String formatTime(Duration d) {
     String two(int n) => n.toString().padLeft(2, "0");
     return "${two(d.inMinutes)}:${two(d.inSeconds % 60)}";
@@ -249,7 +221,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             children: [
               const SizedBox(height: 20),
 
-              //  ALBUM ART
               ClipRRect(
                 borderRadius: BorderRadius.circular(18),
                 child: Image.network(
@@ -262,14 +233,12 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
               const SizedBox(height: 20),
 
-              //  TITLE
               Text(
                 currentSong["Title"],
                 style: TextStyle(
                     color: textColor, fontSize: 24, fontWeight: FontWeight.bold),
               ),
 
-              //  SINGER
               Text(
                 currentSong["Singer"],
                 style: TextStyle(color: subtitleColor, fontSize: 16),
@@ -277,7 +246,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
               const SizedBox(height: 20),
 
-              //  SEEK BAR
               Slider(
                 value: _duration.inSeconds == 0
                     ? 0
@@ -300,7 +268,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
               const SizedBox(height: 30),
 
-              // CONTROLS
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

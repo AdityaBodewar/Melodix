@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
 import 'package:frontend/AlbumsPage.dart';
 import 'package:frontend/AllSongsPage.dart';
+import 'package:frontend/ArtistSongsPage.dart';
 import 'package:frontend/DownloadsPage.dart';
 import 'package:frontend/LoginPage.dart';
 import 'package:frontend/Registerpage.dart';
@@ -27,7 +28,11 @@ class _HomePageState extends State<HomePage> {
   final PageController _bannerController = PageController();
 
   List<dynamic> topSongs = [];
+  List<dynamic> artists = [];
+
   bool isLoading = true;
+  bool artistLoading = true;
+
   Future<void> loadSongs() async {
     setState(() {
       isLoading = true;
@@ -65,6 +70,7 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     loadSongs();
+    loadArtists();
 
     Timer.periodic(const Duration(seconds: 3), (timer) {
       if (_bannerController.hasClients) {
@@ -80,6 +86,20 @@ class _HomePageState extends State<HomePage> {
       }
     });
   }
+
+  Future<void> loadArtists() async {
+    setState(() {
+      artistLoading = true;
+    });
+
+    final data = await ApiService.fetchAllArtists();
+
+    setState(() {
+      artists = data;
+      artistLoading = false;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -514,98 +534,110 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildArtistAlbum(Color textColor) {
+    if (artistLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Artists',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                  fontSize: 20,
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AllSongsPage(songs: topSongs),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'View All',
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-            ],
+          child: Text(
+            'Artists',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: textColor,
+              fontSize: 20,
+            ),
           ),
         ),
         const SizedBox(height: 12),
+
         SizedBox(
-          height: 160,
+          height: 190,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: topSongs.length,
+            itemCount: artists.length,
             itemBuilder: (context, index) {
-              final song = topSongs[index];
+              final artist = artists[index];
               return InkWell(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => SongPlayerPage(
-                        songs: topSongs,
-                        currentIndex: index,
-                      ),
+                      builder: (_) => ArtistSongsPage(artist: artist),
                     ),
                   );
                 },
-                child: _buildArtistCard(song),
+                child: _buildArtistCard(artist),
               );
             },
           ),
-        )
+        ),
       ],
     );
   }
 
-  Widget _buildArtistCard(dynamic song) {
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+
+  Widget _buildArtistCard(dynamic artist) {
+    final String imageUrl = artist["Image"] ?? "";
+    final String name = artist["Fullname"] ?? "Unknown Artist";
+
     return Container(
-      width: 120,
+      width: 160,
       margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         children: [
-          ClipOval(
-            child: Image.network(
-              song["Image"],
-              height: 120,
-              width: 120,
-              fit: BoxFit.cover,
+
+          Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.35),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: ClipOval(
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) {
+                  return Container(
+                    color: Colors.grey.shade300,
+                    child: const Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
+              ),
             ),
           ),
-          const SizedBox(height: 8),
+
+          const SizedBox(height: 10),
+
           Text(
-            song["Singer"],
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
+            name,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
     );
   }
+
+
 }

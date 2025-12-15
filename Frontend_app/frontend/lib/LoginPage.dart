@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
       if (msg.contains("email") && msg.contains("not") && msg.contains("registered")) {
         showError("Email not registered");
       }
-      else if (msg.contains("wrong") && msg.contains("password")) {
+      else if (msg.contains("wrong") && msg.contains("Password")) {
         showError("Wrong Password");
       }
       else {
