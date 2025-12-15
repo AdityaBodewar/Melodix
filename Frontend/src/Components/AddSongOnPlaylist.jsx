@@ -11,7 +11,7 @@ const AddSongOnPlaylistPage = () => {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Fetch all songs
+ 
   useEffect(() => {
     const fetchSongs = async () => {
       try {

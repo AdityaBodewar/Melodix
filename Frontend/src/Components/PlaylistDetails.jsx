@@ -13,7 +13,7 @@ const PlaylistDetails = () => {
   const navigate = useNavigate();
 
   const { playSong } = useAudio();   
-
+ 
   useEffect(() => {
     const fetchPlaylistDetails = async () => {
       try {

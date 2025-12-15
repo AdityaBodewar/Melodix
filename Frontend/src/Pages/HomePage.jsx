@@ -10,7 +10,6 @@ import AddMusic from '../Components/AddMusic'
 const HomePage = () => {
   return (
     <>
-    
     <div className="nav mb-5">
       <NavBar/>
     </div>

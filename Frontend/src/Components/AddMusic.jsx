@@ -12,7 +12,7 @@ const AddMusic = () => {
 const handleChange=(e)=>{
 
   const {name,value,files}=e.target;
-
+ 
   if(files)
   {
     if(name=="image")

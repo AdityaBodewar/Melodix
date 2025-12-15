@@ -14,7 +14,7 @@ const AboutArtist = () => {
       setLoading(false);
       return;
     }
-
+ 
     const artistId = String(artist._id);
     console.log("Fetching songs for artist ID:", artistId);
 
@@ -49,7 +49,7 @@ const AboutArtist = () => {
       <div className="bg-base-100 p-6 rounded-xl mb-6">
         <div className="flex items-center gap-4">
           <img
-            src={artist.Profile || "https://via.placeholder.com/150"}
+            src={artist.Image || "https://via.placeholder.com/150"}
             alt={artist.Fullname}
             className="w-24 h-24 rounded-full object-cover"
           />

@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; // Import useNavigate
+import { useNavigate } from "react-router-dom"; 
 import LoginPage from "../Pages/LoginPage";
 
 const NavBar = () => {
   const [search, setSearch] = useState("");
   const [result, setResult] = useState([]);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     if (search.trim() === "") {
@@ -179,7 +179,7 @@ const NavBar = () => {
           tabIndex="-1"
           className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
         >
-          <li><a>Profile</a></li>
+          <li><a href="/profile">Profile</a></li>
           <li><a>Settings</a></li>
           <li><a onClick={handleLogout}>Logout</a></li>
         </ul>

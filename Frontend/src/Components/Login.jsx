@@ -12,7 +12,7 @@ const Login = () => {
 
     setUser({...user,[e.target.name]:e.target.value});
 
-   }
+   } 
    const handleSubmit=()=>{
 
     axios.post("http://localhost:5000/login",user)
@@ -24,7 +24,7 @@ const Login = () => {
         navigate('/');
     })
     .catch(error=>{
-        alert(error.data.message);
+        alert(error.response.error);
     });
 
 

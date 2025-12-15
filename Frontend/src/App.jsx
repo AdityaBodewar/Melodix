@@ -9,6 +9,7 @@ import PlaylistDetails from './Components/PlaylistDetails';
 import MiniPlayer from './Components/MiniPlayer';
 import { AudioProvider } from './ContextProvider/AudioContext';
 import AboutArtist from './Components/AboutArtist';
+import ProfilePage from './Pages/ProfilePage';
 
 
 const App = () => {
@@ -18,6 +19,8 @@ const App = () => {
         <Routes>
           <Route path='/' element={<HomePage />} />
           <Route path='/login' element={<LoginPage />} />
+           <Route path='/profile' element={<ProfilePage />} />
+
            <Route path='/aboutartist' element={<AboutArtist/>} />
           <Route path='/register' element={<RegisterPage />} />
           <Route path='/playlists' element={<CreatePlaylist />} />
@@ -25,7 +28,7 @@ const App = () => {
           <Route path='/playlist/:playlistId/add' element={<AddSongOnPlaylistPage />} />
         </Routes>
 
-        
+         
         <MiniPlayer />
       </Router>
     </AudioProvider>

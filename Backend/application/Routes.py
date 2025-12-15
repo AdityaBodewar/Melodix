@@ -278,7 +278,7 @@ def addSongToPlaylist():
         if playlist["user_id"] != user_id:
             return jsonify({"error": "Cannot edit someone else's playlist"}), 403
 
-        # Avoid duplicates
+       
         if song_obj_id in playlist.get("songs", []):
             return jsonify({"message": "Song already in playlist"}), 200
 
@@ -349,12 +349,12 @@ def get_playlist(playlist_id):
 
         user_id = ObjectId(user_id_str)
 
-        # Find the playlist and ensure it belongs to the logged-in user
+        
         playlist = db.Playlists.find_one({"_id": ObjectId(playlist_id), "user_id": user_id})
         if not playlist:
             return jsonify({"error": "Playlist not found"}), 404
 
-        # Fetch full song details for each song in playlist
+       
         songs = []
         for song_id in playlist.get("songs", []):
             song = db.Songs.find_one({"_id": ObjectId(song_id)})
@@ -408,8 +408,6 @@ def getsongofartist(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-#
-secret = "mysecretkey123"     
 
 
 @app.route("/login_flutter", methods=['POST'])
@@ -423,16 +421,19 @@ def login_flutter():
         email = data.get('Email')
         password = data.get('Password')
 
+      
         user = db.Users.find_one({"Email": email})
         artist = db.Artist.find_one({"Email": email})
         admin = db.Admin.find_one({"Email": email})
 
-
+       
         def generate_token(role):
             payload = {"Email": email, "Role": role}
 
+           
             token = jwt.encode(payload, str(secret), algorithm="HS256")
 
+           
             if isinstance(token, bytes):
                 token = token.decode("utf-8")
 
@@ -449,14 +450,14 @@ def login_flutter():
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
+
         if artist:
             if password == artist.get("Password"):
                 token = generate_token("Artist")
                 return jsonify({
                 "message": "Artist Login Successfully",
                 "Token": token,
-                "Role": "Artist",
-               
+                "Role": "Artist"
 }), 200
 
 
@@ -466,15 +467,114 @@ def login_flutter():
                 return jsonify({
                     "message": "User Login Successfully",
                     "Token": token,
-                    "Role": "User",
-                  
+                    "Role": "User"
                 }), 200
             else:
                 return jsonify({"message": "wrong Password"}), 401
 
 
+       
         return jsonify({"message": "Email not registered"}), 401
 
     except Exception as e:
         print("LOGIN ERROR:", e)    
         return jsonify({"error": str(e)}), 500
+
+@app.route("/profile", methods=["GET"])
+def get_profile():
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return jsonify({"message": "Authorization header missing"}), 401
+
+    token = auth_header.split(" ")[1]
+    try:
+        decoded = jwt.decode(token, secret, algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
+
+    role = decoded.get("Role", "User").lower()
+
+    if role == "artist":
+        collection = db.Artist
+    elif role == "admin":
+        collection = db.Admin
+    else:
+        collection = db.Users
+
+    user_id = decoded.get('user_id')
+    if not user_id:
+        return jsonify({"message": "user_id missing in token"}), 400
+
+   
+    try:
+        user_id_obj = ObjectId(user_id)
+    except:
+        user_id_obj = user_id 
+
+    print(f"Fetching {role} with _id: {user_id_obj}")
+    user = collection.find_one({"_id": user_id_obj})
+    if not user:
+        return jsonify({"message": f"{role} not found"}), 404
+
+   
+    if isinstance(user.get("_id"), ObjectId):
+        user['_id'] = str(user['_id'])
+
+    return jsonify(user), 200
+
+
+@app.route("/profile", methods=["PUT"])
+def update_profile():
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        return jsonify({"message": "Authorization header missing"}), 401
+
+    token = auth_header.split(" ")[1]
+    try:
+        decoded = jwt.decode(token, secret, algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        return jsonify({"message": "Token expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"message": "Invalid token"}), 401
+
+   
+    role = decoded.get("Role", "User")
+    if role.lower() == "artist":
+        collection = db.Artist
+    elif role.lower() == "admin":
+        collection = db.Admin
+    else:
+        collection = db.Users
+
+    user = collection.find_one({"_id": ObjectId(decoded['user_id'])})
+    if not user:
+        return jsonify({"message": f"{role} not found"}), 404
+
+    
+    fullname = request.form.get("Fullname")
+    email = request.form.get("Email")
+    username = request.form.get("Username")
+
+   
+    image_file = request.files.get("Image")
+    image_url = user.get("Image", "") 
+
+    if image_file:
+       
+        result = cloudinary.uploader.upload(image_file, folder=f"profile_pics/{role}")
+        image_url = result.get("secure_url")  
+
+   
+    collection.update_one(
+        {"_id": ObjectId(decoded['user_id'])},
+        {"$set": {
+            "Fullname": fullname,
+            "Email": email,
+            "Username": username,
+            "Image": image_url
+        }}
+    )
+
+    return jsonify({"message": f"{role} profile updated successfully", "Image": image_url}), 200

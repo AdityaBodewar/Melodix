@@ -9,7 +9,7 @@ export const AudioProvider = ({ children }) => {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
 
-  // Load new song
+  
   const playSong = (newSong) => {
     if (song?._id !== newSong._id) {
       setSong(newSong);

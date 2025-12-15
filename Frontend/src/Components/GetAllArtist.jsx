@@ -11,7 +11,7 @@ const GetAllArtist = () => {
       .then((data) => {
     
         const artistsData = data.artist.map((a) => ({
-          ...a,
+          ...a, 
          
           _id: a._id?.$oid || a._id?.toString() || String(a._id),
         }));
@@ -36,7 +36,7 @@ const GetAllArtist = () => {
           >
             <div className="relative w-full h-40 overflow-hidden rounded-xl">
               <img
-                src={item.Profile || "https://via.placeholder.com/150"}
+                src={item.Image || "https://via.placeholder.com/150"}
                 alt={item.Fullname}
                 className="w-full h-full object-cover rounded-xl"
               />
