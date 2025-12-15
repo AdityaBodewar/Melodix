@@ -14,7 +14,7 @@ const AboutArtist = () => {
       setLoading(false);
       return;
     }
-
+ 
     const artistId = String(artist._id);
     console.log("Fetching songs for artist ID:", artistId);
 

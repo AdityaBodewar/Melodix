@@ -11,7 +11,7 @@ const GetAllArtist = () => {
       .then((data) => {
     
         const artistsData = data.artist.map((a) => ({
-          ...a,
+          ...a, 
          
           _id: a._id?.$oid || a._id?.toString() || String(a._id),
         }));

@@ -9,7 +9,7 @@ const CreatePlaylist = () => {
   const [showModal, setShowModal] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const navigate = useNavigate();
-
+ 
   useEffect(() => {
     fetchPlaylists();
   }, []);

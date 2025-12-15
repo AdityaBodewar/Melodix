@@ -7,13 +7,13 @@ const Profile = () => {
     Fullname: "",
     Email: "",
     Username: "",
-    Image: "", // base64 or URL
+    Image: "",
   });
 
-  const [imageFile, setImageFile] = useState(null); // actual file for upload
+  const [imageFile, setImageFile] = useState(null);  
   const token = localStorage.getItem("Token");
 
-  // 🔹 GET PROFILE
+ 
   useEffect(() => {
     axios
       .get("http://localhost:5000/profile", {

@@ -6,7 +6,7 @@ import RegisterArtist from "../Components/RegisterArtist";
 const RegisterPage = () => {
   const [activeTab, setActiveTab] = useState("user");
 
-  // animation variants
+ 
   const slideLeft = {
     initial: { x: "-100%", opacity: 0 },
     animate: { x: 0, opacity: 1 },

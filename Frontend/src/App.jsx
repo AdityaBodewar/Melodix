@@ -28,7 +28,7 @@ const App = () => {
           <Route path='/playlist/:playlistId/add' element={<AddSongOnPlaylistPage />} />
         </Routes>
 
-        
+         
         <MiniPlayer />
       </Router>
     </AudioProvider>

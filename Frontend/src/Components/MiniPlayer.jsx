@@ -18,7 +18,7 @@ const MiniPlayer = () => {
   return (
     <div className="fixed bottom-0 left-0 w-full bg-black text-white px-5 py-3 flex items-center justify-between shadow-lg z-50">
 
-      {/* LEFT — Song Info */}
+    
       <div className="flex items-center gap-3 w-1/4">
         <img src={song.Image} className="w-12 h-12 rounded-lg object-cover" />
         <div className="leading-tight">

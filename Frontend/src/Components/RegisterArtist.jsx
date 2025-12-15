@@ -12,7 +12,7 @@ const handleChange=(e)=>{
 setUser({...user,[e.target.name]:e.target.value});
 
 }
-
+ 
 const handleSubmit=()=>{
    
     axios.post("http://localhost:5000/registerArtist",user)
