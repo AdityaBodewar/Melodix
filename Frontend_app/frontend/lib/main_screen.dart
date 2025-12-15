@@ -48,7 +48,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    DateTime? lastPressed; // <-- ADD THIS
+    DateTime? lastPressed;
 
     return WillPopScope(
       onWillPop: () async {
@@ -65,10 +65,10 @@ class _MainScreenState extends State<MainScreen> {
             ),
           );
 
-          return false; // DO NOT EXIT
+          return false;
         }
 
-        return true; //  EXIT APP
+        return true;
       },
 
       child: Scaffold(
@@ -113,12 +113,12 @@ class _MainScreenState extends State<MainScreen> {
       child: BottomNavigationBar(
         currentIndex: _currentIndex,
 
-        //  Main Logic For Restricting Pages
+        //  logic for restriction page when user not login
         onTap: (index) async {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           String? token = prefs.getString("token");
 
-          // User is NOT logged in & trying to open My Library or Profile
+
           if ((index == 2 || index == 3) && (token == null || token.isEmpty)) {
             Navigator.push(
               context,
@@ -127,7 +127,7 @@ class _MainScreenState extends State<MainScreen> {
             return;
           }
 
-          // Otherwise allow navigation
+          // else acces pages
           setState(() => _currentIndex = index);
         },
 
@@ -179,7 +179,7 @@ class _MainScreenState extends State<MainScreen> {
     return GestureDetector(
       onTap: () {
         if (MusicController.isOffline == true) {
-          // open offline player page
+
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -192,7 +192,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
           );
         } else {
-          // open online player page
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -222,7 +221,7 @@ class _MainScreenState extends State<MainScreen> {
 
         child: Row(
           children: [
-            // SONG IMAGE
+
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
@@ -235,7 +234,6 @@ class _MainScreenState extends State<MainScreen> {
 
             SizedBox(width: 10),
 
-            // TITLE + ARTIST
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -265,7 +263,6 @@ class _MainScreenState extends State<MainScreen> {
               ),
             ),
 
-            // PLAY / PAUSE BUTTON
             IconButton(
               icon: Icon(
                 MusicController.isPlaying ? Icons.pause : Icons.play_arrow,

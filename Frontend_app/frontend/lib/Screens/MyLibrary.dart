@@ -60,7 +60,7 @@ class _LibraryScreenState extends State<Mylibrary> {
 
                   final isDark = Theme.of(context).brightness == Brightness.dark;
 
-                  // IF USER IS LOGGED IN  GO TO PROFILE PAGE
+                  // if user login go to profile page
                   if (token != null && token.isNotEmpty) {
                     Navigator.push(
                       context,
@@ -69,7 +69,7 @@ class _LibraryScreenState extends State<Mylibrary> {
                     return;
                   }
 
-                  //  IF NOT LOGGED IN SHOW LOGIN / REGISTER OPTIONS
+                  // if user not login show register option
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: isDark ? Colors.black : Colors.white,
@@ -98,7 +98,6 @@ class _LibraryScreenState extends State<Mylibrary> {
                             color: isDark ? Colors.white24 : Colors.black12,
                           ),
 
-                          // LOGIN BTN
                           ListTile(
                             leading: Icon(Icons.login,
                                 color: isDark ? Colors.white : Colors.black87),
@@ -114,7 +113,6 @@ class _LibraryScreenState extends State<Mylibrary> {
                             },
                           ),
 
-                          // REGISTER BTN
                           ListTile(
                             leading: Icon(Icons.app_registration,
                                 color: isDark ? Colors.white : Colors.black87),
@@ -166,18 +164,13 @@ class _LibraryScreenState extends State<Mylibrary> {
 
   IconData _getIcon(String iconName) {
     switch (iconName) {
-      case 'favorite':
-        return Icons.favorite;
-      case 'playlist_play':
-        return Icons.playlist_play;
+
       case 'album':
         return Icons.album;
       case 'person':
         return Icons.person;
       case 'download':
         return Icons.download;
-      case 'history':
-        return Icons.history;
       default:
         return Icons.music_note;
     }

@@ -34,14 +34,12 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
   void initState() {
     super.initState();
 
-    //  If SAME offline song already playing → DO NOT restart
     if (MusicController.isOffline == true &&
         MusicController.localFilePath == widget.filePath &&
         MusicController.isPlaying == true)
     {
       isPlaying = true;
 
-      // Sync duration + position
       _player.getDuration().then((d) {
         if (d != null) setState(() => _duration = d);
       });
@@ -52,16 +50,13 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
     }
     else
     {
-      //  Play new offline song
       playSong();
     }
 
-    // Listen for duration updates
     _player.onDurationChanged.listen((d) {
       if (mounted) setState(() => _duration = d);
     });
 
-    // Listen for playing position updates
     _player.onPositionChanged.listen((p) {
       if (mounted) setState(() => _position = p);
     });
@@ -73,10 +68,8 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
     try {
       final player = MusicController.player;
 
-      // Stop any previous song (online/offline)
       await player.stop();
 
-      //  Play offline song
       await player.setSource(DeviceFileSource(widget.filePath));
       await player.resume();
 
@@ -174,7 +167,7 @@ class _OfflinePlayerPageState extends State<OfflinePlayerPage> {
                 await _player.resume();
               }
               setState(() => isPlaying = !isPlaying);
-              MusicController.isPlaying = isPlaying; // sync bottom bar
+              MusicController.isPlaying = isPlaying;
             },
           ),
         ],

@@ -48,7 +48,6 @@ class NotLoggedInPage extends StatelessWidget {
 
               const SizedBox(height: 35),
 
-              // LOGIN BUTTON
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
