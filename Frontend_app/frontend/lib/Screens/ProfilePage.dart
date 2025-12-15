@@ -72,7 +72,6 @@ class _ProfileScreenState extends State<Profilepage> {
           children: [
             const SizedBox(height: 30),
 
-            // Avatar
             CircleAvatar(
               radius: 60,
               backgroundColor: Colors.blue,
@@ -81,7 +80,6 @@ class _ProfileScreenState extends State<Profilepage> {
 
             const SizedBox(height: 16),
 
-            // Name
             Text(
               name,
               style: TextStyle(
@@ -93,7 +91,6 @@ class _ProfileScreenState extends State<Profilepage> {
 
             const SizedBox(height: 8),
 
-            // Email
             Text(
               email,
               style: TextStyle(
@@ -126,11 +123,11 @@ class _ProfileScreenState extends State<Profilepage> {
                 return;
               }
 
-              // ✔ User is logged in → allow Edit
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const EditProfilePage()),
-              );
+              // if user login alow editprofile
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (_) => const EditProfilePage()),
+              // );
             }),
 
 
@@ -199,50 +196,7 @@ class _ProfileScreenState extends State<Profilepage> {
     );
   }
 
-  // void _showEditDialog() {
-  //   TextEditingController nameController = TextEditingController(text: name);
-  //   TextEditingController emailController = TextEditingController(text: email);
-  //
-  //   showDialog(
-  //     context: context,
-  //     builder: (context) {
-  //       return AlertDialog(
-  //         title: const Text('Edit Profile'),
-  //         content: Column(
-  //           mainAxisSize: MainAxisSize.min,
-  //           children: [
-  //             TextField(
-  //               controller: nameController,
-  //               decoration: const InputDecoration(labelText: 'Name'),
-  //             ),
-  //             TextField(
-  //               controller: emailController,
-  //               decoration: const InputDecoration(labelText: 'Email'),
-  //             ),
-  //           ],
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () => Navigator.pop(context),
-  //             child: const Text('Cancel'),
-  //           ),
-  //           ElevatedButton(
-  //             onPressed: () {
-  //               setState(() {
-  //                 name = nameController.text;
-  //                 email = emailController.text;
-  //               });
-  //               Navigator.pop(context);
-  //             },
-  //             child: const Text('Save'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
 
-  // Logout
   void showLogoutConfirmDialog() {
     showDialog(
       context: context,
@@ -252,7 +206,7 @@ class _ProfileScreenState extends State<Profilepage> {
           content: const Text("Are you sure you want to logout?"),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context), // Cancel
+              onPressed: () => Navigator.pop(context),
               child: const Text("Cancel"),
             ),
             ElevatedButton(

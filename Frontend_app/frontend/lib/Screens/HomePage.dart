@@ -117,7 +117,7 @@ class _HomePageState extends State<HomePage> {
 
                   final isDark = Theme.of(context).brightness == Brightness.dark;
 
-                  // IF USER IS LOGGED IN  GO TO PROFILE PAGE
+                  // if user login go to profile page
                   if (token != null && token.isNotEmpty) {
                     Navigator.push(
                       context,
@@ -126,7 +126,7 @@ class _HomePageState extends State<HomePage> {
                     return;
                   }
 
-                  //  IF NOT LOGGED IN SHOW LOGIN / REGISTER OPTIONS
+                  // if not login show register option
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: isDark ? Colors.black : Colors.white,
@@ -155,7 +155,6 @@ class _HomePageState extends State<HomePage> {
                             color: isDark ? Colors.white24 : Colors.black12,
                           ),
 
-                          // LOGIN BTN
                           ListTile(
                             leading: Icon(Icons.login,
                                 color: isDark ? Colors.white : Colors.black87),
@@ -171,7 +170,6 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
 
-                          // REGISTER BTN
                           ListTile(
                             leading: Icon(Icons.app_registration,
                                 color: isDark ? Colors.white : Colors.black87),
@@ -187,7 +185,6 @@ class _HomePageState extends State<HomePage> {
                             },
                           ),
 
-                          // CANCEL
                           ListTile(
                             leading: const Icon(Icons.close, color: Colors.redAccent),
                             title: const Text(
@@ -212,10 +209,10 @@ class _HomePageState extends State<HomePage> {
       drawer: _buildDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
-          await loadSongs();      //  reload songs
+          await loadSongs();
         },
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(), // allow scroll & pull even if short
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(bottom: 140),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -234,7 +231,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Drawer
   Widget _buildDrawer() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -316,8 +312,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Banner slider same as before...
-  Widget buildBannerSlider() { /* unchanged from your version */ return Column(
+  Widget buildBannerSlider() {
+    return Column(
     children: [
       SizedBox(
         height: 190,
