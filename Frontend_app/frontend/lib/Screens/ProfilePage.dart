@@ -6,9 +6,12 @@ import 'package:frontend/LoginPage.dart';
 import 'package:frontend/PrivacyPage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/TermsPage.dart';
+import 'package:frontend/adminPanel/AddMusicForm.dart';
 import 'package:frontend/main_screen.dart';
 import 'package:frontend/theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../MusicController.dart';
 
 class Profilepage extends StatefulWidget {
   const Profilepage({Key? key}) : super(key: key);
@@ -20,6 +23,8 @@ class Profilepage extends StatefulWidget {
 class _ProfileScreenState extends State<Profilepage> {
   String name = "Music Lover";
   String email = "musiclover@example.com";
+  String role = "User";
+
 
   bool isProfileLoaded = false;
 
@@ -29,6 +34,8 @@ class _ProfileScreenState extends State<Profilepage> {
     setState(() {
       name = prefs.getString("fullname") ?? "Music Lover";
       email = prefs.getString("email") ?? "musiclover@example.com";
+      role = prefs.getString("role") ?? "User";
+
       isProfileLoaded = true;
     });
   }
@@ -101,6 +108,40 @@ class _ProfileScreenState extends State<Profilepage> {
 
             const SizedBox(height: 30),
 
+            if (role == "Artist")
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: ListTile(
+                  tileColor: Colors.blue.withOpacity(0.12), // 🔵 light blue background
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  leading: const Icon(
+                    Icons.library_music,
+                    color: Colors.blue, // 🔵 blue icon
+                  ),
+                  title: const Text(
+                    "Add Song",
+                    style: TextStyle(
+                      color: Colors.blue, // 🔵 blue text
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  trailing: const Icon(
+                    Icons.chevron_right,
+                    color: Colors.blue,
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AddMusicForm()),
+                    );
+                  },
+                ),
+              ),
+
+
 
             _buildProfileOption(Icons.edit, 'Edit Profile', () async {
               SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -128,7 +169,9 @@ class _ProfileScreenState extends State<Profilepage> {
               //   context,
               //   MaterialPageRoute(builder: (_) => const EditProfilePage()),
               // );
-            }),
+            }
+
+            ),
 
 
             _buildProfileOption(Icons.notifications, 'Notifications', () {
@@ -226,17 +269,15 @@ class _ProfileScreenState extends State<Profilepage> {
   }
 
   Future<void> logoutUser() async {
+    await MusicController.reset();
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.clear();
 
-    setState(() {
-      name = "Music Lover";
-      email = "musiclover@example.com";
-    });
-
-    Navigator.push(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const MainScreen()),
+          (route) => false,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(

@@ -172,6 +172,41 @@ class ApiService {
   }
 
 
+  static Future<List<dynamic>> fetchAllArtists() async {
+    Dio dio = Dio();
+
+    try {
+      final res = await dio.get("$baseUrl/getallartist");
+
+      if (res.statusCode == 200) {
+        return res.data["artist"] ?? [];
+      }
+    } catch (e) {
+      print("Fetch artist error: $e");
+    }
+
+    return [];
+  }
+
+
+  static Future<List<dynamic>> fetchSongsOfArtist(String artistId) async {
+    Dio dio = Dio();
+
+    try {
+      final res = await dio.get("$baseUrl/getsongofartist/$artistId");
+
+      if (res.statusCode == 200) {
+        return res.data["data"] ?? [];
+      }
+    } catch (e) {
+      print("Fetch artist songs error: $e");
+    }
+
+    return [];
+  }
+
+
+
 
 
 }
