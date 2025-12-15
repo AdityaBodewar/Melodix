@@ -408,7 +408,6 @@ def getsongofartist(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-   
 
 
 @app.route("/login_flutter", methods=['POST'])
