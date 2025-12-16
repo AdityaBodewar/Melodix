@@ -8,6 +8,7 @@ export const AudioProvider = ({ children }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
   
   const playSong = (newSong) => {
@@ -50,16 +51,18 @@ export const AudioProvider = ({ children }) => {
 
   return (
     <AudioContext.Provider
-      value={{
-        song,
-        playSong,
-        isPlaying,
-        togglePlay,
-        currentTime,
-        duration,
-        seek,
-      }}
-    >
+  value={{
+    song,
+    playSong,
+    isPlaying,
+    togglePlay,
+    currentTime,
+    duration,
+    seek,
+    isFullScreen,
+    setIsFullScreen
+  }}
+>
       {children}
     </AudioContext.Provider>
   );

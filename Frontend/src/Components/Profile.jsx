@@ -10,10 +10,9 @@ const Profile = () => {
     Image: "",
   });
 
-  const [imageFile, setImageFile] = useState(null);  
+  const [imageFile, setImageFile] = useState(null);
   const token = localStorage.getItem("Token");
 
- 
   useEffect(() => {
     axios
       .get("http://localhost:5000/profile", {
@@ -23,35 +22,30 @@ const Profile = () => {
       .catch((err) => console.log(err));
   }, []);
 
-  // 🔹 INPUT CHANGE
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔹 IMAGE → PREVIEW & STORE FILE
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    setImageFile(file); // store file for sending
+    setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => {
-      setProfile((prev) => ({ ...prev, Image: reader.result })); // preview
+      setProfile((prev) => ({ ...prev, Image: reader.result }));
     };
     reader.readAsDataURL(file);
   };
 
-  // 🔹 UPDATE PROFILE
   const saveProfile = async () => {
     try {
       const formData = new FormData();
       formData.append("Fullname", profile.Fullname);
       formData.append("Email", profile.Email);
       formData.append("Username", profile.Username);
-      if (imageFile) {
-        formData.append("Image", imageFile); // send file if selected
-      }
+      if (imageFile) formData.append("Image", imageFile);
 
       await axios.put("http://localhost:5000/profile", formData, {
         headers: {
@@ -61,7 +55,7 @@ const Profile = () => {
       });
 
       setIsEditing(false);
-      setImageFile(null); // reset file input
+      setImageFile(null);
       alert("Profile updated successfully!");
     } catch (err) {
       console.error(err);
@@ -69,73 +63,117 @@ const Profile = () => {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("Token");
+    localStorage.removeItem("Role");
+    window.location.href = "/";
+  };
+
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        {/* Profile Photo */}
-        <div style={styles.photoSection}>
-          <div style={styles.photoBox}>
-            {profile.Image ? (
-              <img src={profile.Image} alt="Profile" style={styles.photo} />
-            ) : (
-              <span style={styles.photoText}>Profile Photo</span>
+    <div className="min-h-screen bg-base-200 flex justify-center items-center">
+      <div className="w-[360px] bg-base-100 rounded-2xl shadow-xl p-6 space-y-5">
+
+        {/* Profile Image */}
+        <div className="flex flex-col items-center gap-3">
+          <div className="relative group">
+            <img
+              src={profile.Image || "https://via.placeholder.com/150"}
+              alt="Profile"
+              className="w-32 h-32 rounded-full object-cover border-4 border-primary"
+            />
+            {isEditing && (
+              <label className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-full opacity-0 group-hover:opacity-100 cursor-pointer transition">
+                <span className="text-white text-sm">Change Photo</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handlePhotoChange}
+                />
+              </label>
             )}
           </div>
-          {isEditing && (
-            <input type="file" accept="image/*" onChange={handlePhotoChange} />
-          )}
+
+          <h2 className="text-xl font-semibold">{profile.Fullname || "Your Name"}</h2>
+          <p className="text-sm text-gray-500">@{profile.Username}</p>
         </div>
 
-        {/* Full Name */}
-        <div style={styles.field}>
-          <label>Full Name</label>
-          {isEditing ? (
-            <input name="Fullname" value={profile.Fullname} onChange={handleChange} />
-          ) : (
-            <p>{profile.Fullname}</p>
-          )}
+        {/* Profile Fields */}
+        <div className="space-y-3">
+          <ProfileField
+            label="Full Name"
+            name="Fullname"
+            value={profile.Fullname}
+            isEditing={isEditing}
+            onChange={handleChange}
+          />
+
+          <ProfileField
+            label="Email"
+            name="Email"
+            value={profile.Email}
+            isEditing={isEditing}
+            onChange={handleChange}
+          />
+
+          <ProfileField
+            label="Username"
+            name="Username"
+            value={profile.Username}
+            isEditing={isEditing}
+            onChange={handleChange}
+          />
         </div>
 
-        {/* Email */}
-        <div style={styles.field}>
-          <label>Email</label>
-          {isEditing ? (
-            <input name="Email" value={profile.Email} onChange={handleChange} />
-          ) : (
-            <p>{profile.Email}</p>
-          )}
+        {/* Settings Section */}
+        <div className="border-t pt-4 space-y-2">
+          <h3 className="text-sm font-semibold text-gray-500">Profile Settings</h3>
+          <div className="text-sm text-gray-600 cursor-pointer hover:text-primary">
+            Change Password
+          </div>
+          <div className="text-sm text-gray-600 cursor-pointer hover:text-primary">
+            Privacy Settings
+          </div>
+          <div className="text-sm text-gray-600 cursor-pointer hover:text-primary">
+            Notification Preferences
+          </div>
         </div>
 
-        {/* Username */}
-        <div style={styles.field}>
-          <label>Username</label>
-          {isEditing ? (
-            <input name="Username" value={profile.Username} onChange={handleChange} />
-          ) : (
-            <p>{profile.Username}</p>
-          )}
-        </div>
+        {/* Actions */}
+        <div className="space-y-2">
+          <button
+            onClick={isEditing ? saveProfile : () => setIsEditing(true)}
+            className="btn btn-primary w-full"
+          >
+            {isEditing ? "Save Profile" : "Edit Profile"}
+          </button>
 
-        <button
-          style={styles.button}
-          onClick={isEditing ? saveProfile : () => setIsEditing(true)}
-        >
-          {isEditing ? "Save Profile" : "Edit Profile"}
-        </button>
+          <button
+            onClick={handleLogout}
+            className="btn btn-outline btn-error w-full"
+          >
+            Logout
+          </button>
+        </div>
       </div>
     </div>
   );
 };
 
-const styles = {
-  container: { minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center" },
-  card: { width: "320px", padding: "20px", border: "1px solid #ccc", borderRadius: "10px" },
-  photoSection: { textAlign: "center", marginBottom: "15px" },
-  photoBox: { width: "120px", height: "120px", borderRadius: "50%", border: "1px solid #aaa", margin: "0 auto 10px", overflow: "hidden" },
-  photo: { width: "100%", height: "100%", objectFit: "cover" },
-  photoText: { fontSize: "12px" },
-  field: { marginBottom: "12px" },
-  button: { width: "100%", padding: "8px", cursor: "pointer" },
-};
+const ProfileField = ({ label, name, value, isEditing, onChange }) => (
+  <div>
+    <label className="text-sm text-gray-500">{label}</label>
+    {isEditing ? (
+      <input
+        name={name}
+        value={value}
+        onChange={onChange}
+        className="input input-bordered w-full mt-1"
+      />
+    ) : (
+      <p className="mt-1 font-medium">{value || "-"}</p>
+    )}
+  </div>
+);
 
 export default Profile;

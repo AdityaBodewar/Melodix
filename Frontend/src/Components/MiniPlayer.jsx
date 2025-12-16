@@ -4,7 +4,7 @@ import { FaBackward, FaForward, FaPlay, FaPause, FaRandom, FaListUl, FaHeadphone
 
 const MiniPlayer = () => {
   const navigate = useNavigate();
-  const { song, isPlaying, togglePlay, currentTime, duration, seek } = useAudio();
+  const { song, isPlaying, togglePlay, currentTime, duration, seek, setIsFullScreen } = useAudio();
 
   if (!song) return null;
 
@@ -33,8 +33,8 @@ const MiniPlayer = () => {
         
         {/* Main Controls Row */}
         <div className="flex items-center gap-6 mb-1">
-          <FaRandom className="text-green-500 cursor-pointer" size={18} />
-          <FaBackward className="cursor-pointer" size={18} />
+          {/* <FaRandom className="text-green-500 cursor-pointer" size={18} />*/}
+          <FaBackward className="cursor-pointer" size={18} /> 
 
           <button
             onClick={togglePlay}
@@ -43,8 +43,8 @@ const MiniPlayer = () => {
             {isPlaying ? <FaPause size={18} /> : <FaPlay size={18} />}
           </button>
 
-          <FaForward className="cursor-pointer" size={18} />
-          <FaListUl className="cursor-pointer" size={18} />
+        <FaForward className="cursor-pointer" size={18} />
+           {/*  <FaListUl className="cursor-pointer" size={18} /> */}
         </div>
 
         {/* Seekbar */}
@@ -67,20 +67,13 @@ const MiniPlayer = () => {
 
       {/* RIGHT — Tools */}
       <div className="flex items-center gap-4 w-1/4 justify-end">
-        <FaHeadphones size={18} className="cursor-pointer" />
-        <FaVolumeUp size={18} />
+        
 
-        <input
-          type="range"
-          min={0}
-          max={100}
-          className="w-24 accent-white"
-        />
-
-        <FaExpand
-          size={20}
-          className="cursor-pointer"
-        />
+      <FaExpand
+  size={20}
+  className="cursor-pointer"
+  onClick={() => setIsFullScreen(true)}
+/>
       </div>
     </div>
   );

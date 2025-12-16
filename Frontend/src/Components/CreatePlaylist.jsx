@@ -9,14 +9,21 @@ const CreatePlaylist = () => {
   const [showModal, setShowModal] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const navigate = useNavigate();
+  const token = localStorage.getItem("Token");
  
   useEffect(() => {
     fetchPlaylists();
   }, []);
 
+
   const fetchPlaylists = async () => {
+   
+    if(!token){
+      return ;
+    }
+
     try {
-      const token = localStorage.getItem("Token");
+      
       const res = await axios.get("http://localhost:5000/myPlaylists", {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -34,7 +41,6 @@ const CreatePlaylist = () => {
     setLoading(true);
     setMessage("");
     try {
-      const token = localStorage.getItem("Token");
       const res = await axios.post(
         "http://localhost:5000/createPlaylist",
         { playlist_name: newPlaylistName },
@@ -45,7 +51,7 @@ const CreatePlaylist = () => {
       setNewPlaylistName("");
       setShowModal(false);
 
-      // Redirect to PlaylistDetails page of newly created playlist
+      
       navigate(`/playlist/${res.data.playlist_id}`);
 
       fetchPlaylists();
@@ -56,11 +62,21 @@ const CreatePlaylist = () => {
     }
   };
 
+  const handleAddPlaylistClick = () => {
+  if (!token) {
+    alert("You need to login first");
+    navigate("/login");
+    return;
+  }
+  setShowModal(true);
+};
+
+
   return (
     <div className="p-4">
       <div className="flex flex-col justify-between items-center mb-4">
         <button
-          onClick={() => setShowModal(true)}
+         onClick={handleAddPlaylistClick}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
         >
           Add Playlist
@@ -83,10 +99,9 @@ const CreatePlaylist = () => {
           <p>No playlists found</p>
         )}
       </div>
-
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-          <div className="bg-white p-6 rounded shadow w-96">
+        <div className="fixed inset-0 flex items-center justify-center   bg-opacity-50 z-50">
+          <div className=" p-6 rounded shadow w-96">
             <h2 className="text-lg font-bold mb-2">Create Playlist</h2>
             <input
               type="text"
@@ -98,7 +113,7 @@ const CreatePlaylist = () => {
             <div className="flex justify-end space-x-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="bg-gray-300 px-4 py-2 rounded hover:bg-gray-400 transition"
+                className="px-4 py-2 rounded hover:bg-gray-400 transition"
               >
                 Cancel
               </button>
