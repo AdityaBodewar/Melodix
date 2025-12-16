@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
-import 'package:frontend/EditProfilePage.dart';
 import 'package:frontend/HelpSupportPage.dart';
 import 'package:frontend/LoginPage.dart';
 import 'package:frontend/PrivacyPage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/TermsPage.dart';
 import 'package:frontend/adminPanel/AddMusicForm.dart';
+import 'package:frontend/handleApi/ApiService .dart';
 import 'package:frontend/main_screen.dart';
 import 'package:frontend/theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -35,10 +35,14 @@ class _ProfileScreenState extends State<Profilepage> {
       name = prefs.getString("fullname") ?? "Music Lover";
       email = prefs.getString("email") ?? "musiclover@example.com";
       role = prefs.getString("role") ?? "User";
-
       isProfileLoaded = true;
     });
   }
+
+
+
+
+
 
   @override
   void initState() {
@@ -112,18 +116,18 @@ class _ProfileScreenState extends State<Profilepage> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 child: ListTile(
-                  tileColor: Colors.blue.withOpacity(0.12), // 🔵 light blue background
+                  tileColor: Colors.blue.withOpacity(0.12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                   leading: const Icon(
                     Icons.library_music,
-                    color: Colors.blue, // 🔵 blue icon
+                    color: Colors.blue,
                   ),
                   title: const Text(
                     "Add Song",
                     style: TextStyle(
-                      color: Colors.blue, // 🔵 blue text
+                      color: Colors.blue,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -144,34 +148,12 @@ class _ProfileScreenState extends State<Profilepage> {
 
 
             _buildProfileOption(Icons.edit, 'Edit Profile', () async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
 
-              String? email = prefs.getString("email");
 
-              if (email == null || email.isEmpty) {
-                // User not logged in
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Please login first to edit profile"),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                );
-                return;
-              }
-
-              // if user login alow editprofile
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(builder: (_) => const EditProfilePage()),
-              // );
             }
 
-            ),
+
+    ),
 
 
             _buildProfileOption(Icons.notifications, 'Notifications', () {

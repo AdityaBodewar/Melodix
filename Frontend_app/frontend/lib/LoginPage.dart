@@ -76,9 +76,9 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString("token", token);
       await prefs.setString("role", role);
 
-      await prefs.setString("fullname", data["Fullname"] ?? "");
-      await prefs.setString("email", data["Email"] ?? "");
-
+      // await prefs.setString("fullname", data["Fullname"] ?? "");
+      // await prefs.setString("email", data["Email"] ?? "");
+      //
       print("FULLNAME FROM BACKEND = ${data["Fullname"]}");
       print("EMAIL FROM BACKEND = ${data["Email"]}");
 
