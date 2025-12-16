@@ -23,21 +23,16 @@ const Login = () => {
         localStorage.setItem('Role',role);
         navigate('/');
     })
-    .catch(error=>{
-        alert(error.response.error);
-    });
-
+   .catch(error => {
+  alert(error.response?.data?.error || "Login failed");
+});
 
    }
-
-
-
-
   return (
     <>
 
 
-    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4 ml-[650px] mt-[150px]">
   <legend className="fieldset-legend">Login</legend>
 
   <label className="label">Email</label>
