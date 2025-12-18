@@ -46,12 +46,15 @@ class _LoginPageState extends State<LoginPage> {
     print("DATA = $data");
 
     if (status == 401) {
-      String msg = (data["message"] ?? data["error"] ?? "").toString().trim().toLowerCase();
+      String msg = (data["message"] ?? data["error"] ?? "")
+          .toString()
+          .trim()
+          .toLowerCase();
 
       if (msg.contains("email") && msg.contains("not") && msg.contains("registered")) {
         showError("Email not registered");
       }
-      else if (msg.contains("wrong") && msg.contains("Password")) {
+      else if (msg.contains("wrong") && msg.contains("password")) {
         showError("Wrong Password");
       }
       else {
@@ -59,6 +62,7 @@ class _LoginPageState extends State<LoginPage> {
       }
       return;
     }
+
 
 
 

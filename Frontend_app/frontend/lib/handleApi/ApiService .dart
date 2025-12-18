@@ -18,7 +18,6 @@ class ApiService {
   static const String loginUrl = "$baseUrl/login_flutter";
 
 
-
   static Future<bool> uploadMusic({
     required String title,
     required String singer,
@@ -87,7 +86,6 @@ class ApiService {
 
     return [];
   }
-
 
 
   static Future<Map<String, dynamic>> registerUser({
@@ -206,9 +204,63 @@ class ApiService {
     return [];
   }
 
+  static Future<Map<String, dynamic>> getProfile() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
 
+    if (token == null) {
+      return {"status": 401};
+    }
+
+    Dio dio = Dio();
+
+    final res = await dio.get(
+      "$baseUrl/profile",
+      options: Options(
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+        validateStatus: (_) => true,
+      ),
+    );
+
+    return {
+      "status": res.statusCode,
+      "data": res.data,
+    };
+  }
+
+  static Future<bool> updateProfile({
+    required String fullname,
+    required String username,
+    required String email,
+    File? image,
+  }) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+
+    Dio dio = Dio();
+
+    FormData data = FormData.fromMap({
+      "Fullname": fullname,
+      "Username": username,
+      "Email": email,
+      if (image != null)
+        "Image": await MultipartFile.fromFile(image.path),
+    });
+
+    final res = await dio.put(
+      "$baseUrl/profile",
+      data: data,
+      options: Options(
+        headers: {"Authorization": "Bearer $token"},
+        validateStatus: (_) => true,
+      ),
+    );
+
+    return res.statusCode == 200;
+  }
 
 
 
 }
-
