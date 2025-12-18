@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/LoginPage.dart';
+import 'package:frontend/Screens/HomePage.dart';
 import 'package:frontend/handleApi/ApiService .dart';
+import 'package:frontend/main_screen.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -164,9 +166,9 @@ class _RegisterPageState extends State<RegisterPage>
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
 
-            _field(artistName, "Artist Name", Icons.person),
+            _field(artistName, "Artist Full Name", Icons.person),
             _space(),
-            _field(stageName, "Stage Name", Icons.music_note),
+            _field(stageName, "Username", Icons.music_note),
             _space(),
             _field(artistType, "Artist Type (Rap, Pop...)", Icons.category),
             _space(),
