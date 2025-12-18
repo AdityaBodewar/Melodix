@@ -44,11 +44,16 @@ class _HomePageState extends State<HomePage> {
     //  Fetch fresh updated list
     final newSongs = await ApiService.fetchAllMusic();
 
-    //  Replace list
-    topSongs = newSongs;
+
 
     setState(() {
+      //  Replace list
+      topSongs = newSongs;
+
+      recommendedSongs = List.from(newSongs)..shuffle();
+      recommendedSongs = recommendedSongs.take(6).toList();
       isLoading = false;
+
     });
   }
 
@@ -60,11 +65,14 @@ class _HomePageState extends State<HomePage> {
     {"image": "assets/images/udit_img.jpeg"},
   ];
 
-  List<Map<String, String>> recentlyPlayed = [
-    {'title': 'Ae Kash Ke Hum', 'artist': 'Kumar Sanu'},
-    {'title': 'Jitni Dafa', 'artist': 'Armaan Malik'},
-    {'title': 'Zara Sa', 'artist': 'KK'},
-  ];
+  List<dynamic> recommendedSongs = [];
+
+
+  // List<Map<String, String>> recentlyPlayed = [
+  //   {'title': 'Ae Kash Ke Hum', 'artist': 'Kumar Sanu'},
+  //   {'title': 'Jitni Dafa', 'artist': 'Armaan Malik'},
+  //   {'title': 'Zara Sa', 'artist': 'KK'},
+  // ];
 
   @override
   void initState() {
@@ -97,6 +105,7 @@ class _HomePageState extends State<HomePage> {
     setState(() {
       artists = data;
       artistLoading = false;
+
     });
   }
 
@@ -382,13 +391,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildRecentlyPlayed(Color textColor, bool isDark) {
+    if (recommendedSongs.isEmpty) {
+      return const SizedBox(); // avoid empty UI
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'Recently Played',
+            'Recommended',
             style: TextStyle(
               color: textColor,
               fontSize: 20,
@@ -397,41 +410,57 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         const SizedBox(height: 12),
+
         SizedBox(
           height: 180,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: recentlyPlayed.length,
+            itemCount: recommendedSongs.length,
             itemBuilder: (context, index) {
-              return Container(
-                width: 130,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 130,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.blue.withOpacity(0.3),
-                      ),
-                      child: const Center(
-                        child: Icon(Icons.music_note, size: 50, color: Colors.white),
+              final song = recommendedSongs[index];
+
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SongPlayerPage(
+                        songs: recommendedSongs,
+                        currentIndex: index,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      recentlyPlayed[index]['title']!,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+                  );
+                },
+                child: Container(
+                  width: 130,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 130,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(
+                            image: NetworkImage(song["Image"]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(
+                        song["Title"],
+                        style: TextStyle(
+                          color: textColor,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
                 ),
               );
             },
@@ -440,6 +469,7 @@ class _HomePageState extends State<HomePage> {
       ],
     );
   }
+
 
   Widget _buildTopCharts(Color textColor) {
     return Column(

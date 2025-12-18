@@ -110,8 +110,8 @@ class AboutUsPage extends StatelessWidget {
             const SizedBox(height: 8),
 
             Text(
-              "Email: support@musicvibe.app\n"
-                  "Instagram: @musicvibe\n"
+              "Email: pbhandare239@gmail.com\n"
+                  "Linkedin: https://www.linkedin.com/in/priyanshu-bhandare/\n"
                   "Website: www.musicvibe.app",
               style: TextStyle(
                 color: secondaryText?.withOpacity(0.8),
@@ -123,7 +123,7 @@ class AboutUsPage extends StatelessWidget {
 
             Center(
               child: Text(
-                "Thank you for using MusicVibe 💙",
+                "Thank you for using Melodix 💙",
                 style: TextStyle(
                   color: accentColor,
                   fontSize: 16,

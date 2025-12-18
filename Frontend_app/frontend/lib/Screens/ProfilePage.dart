@@ -259,7 +259,9 @@ class _ProfileScreenState extends State<Profilepage> {
   Future<void> logoutUser() async {
     await MusicController.reset();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove("token");
+    await prefs.remove("role");
+
 
     Navigator.pushAndRemoveUntil(
       context,

@@ -17,6 +17,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
 
+
   bool hidePassword = true;
   bool isLoading = false;
 
@@ -225,30 +226,38 @@ class _LoginPageState extends State<LoginPage> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
+
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextField(
-      controller: controller,
-      style: const TextStyle(color: Colors.white),
+
+
+    controller: controller,
+      style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: Icon(icon, color: Colors.white70),
+        labelStyle: const TextStyle(color: Colors.black),
+        prefixIcon: Icon(icon, color: Colors.grey),
         filled: true,
-        fillColor: const Color(0xFF1E1E1E),
+        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
+
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
   Widget _buildPasswordField() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextField(
       controller: password,
       obscureText: hidePassword,
-      style: const TextStyle(color: Colors.white),
+      style: const TextStyle(color: Colors.black),
       decoration: InputDecoration(
         labelText: "Password",
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+        labelStyle: const TextStyle(color: Colors.black),
+        prefixIcon: const Icon(Icons.lock, color: Colors.grey),
         suffixIcon: IconButton(
           icon: Icon(
             hidePassword ? Icons.visibility_off : Icons.visibility,
@@ -257,7 +266,7 @@ class _LoginPageState extends State<LoginPage> {
           onPressed: () => setState(() => hidePassword = !hidePassword),
         ),
         filled: true,
-        fillColor: const Color(0xFF1E1E1E),
+        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
