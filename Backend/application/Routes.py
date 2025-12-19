@@ -10,7 +10,10 @@ from bson.json_util import dumps
 import json
 
 
-secret=os.getenv("SECRET_KEY")
+secret = os.getenv("SECRET_KEY") or "melodix_super_secret_key"
+
+
+
 
 @app.route("/addmusic",methods=['POST'])
 def addmusic():
@@ -415,70 +418,61 @@ def login_flutter():
     try:
         data = request.get_json()
 
-        if not data.get('Password') or not data.get('Email'):
+        if not data.get('Email') or not data.get('Password'):
             return jsonify({"message": "Enter email and password"}), 401
 
         email = data.get('Email')
         password = data.get('Password')
 
-      
         user = db.Users.find_one({"Email": email})
         artist = db.Artist.find_one({"Email": email})
         admin = db.Admin.find_one({"Email": email})
 
-       
-        def generate_token(role):
-            payload = {"Email": email, "Role": role}
+        def generate_token(role, obj):
+            payload = {
+                "user_id": str(obj["_id"]),  
+                "Email": email,
+                "Role": role
+            }
 
-           
             token = jwt.encode(payload, str(secret), algorithm="HS256")
-
-           
             if isinstance(token, bytes):
                 token = token.decode("utf-8")
-
             return token
 
         if admin:
             if password == admin.get("Password"):
-                token = generate_token("Admin")
                 return jsonify({
                     "message": "Admin Login Successfully",
-                    "Token": token,
+                    "Token": generate_token("Admin", admin),
                     "Role": "Admin"
                 }), 200
-            else:
-                return jsonify({"message": "wrong Password"}), 401
-
+            return jsonify({"message": "Wrong Password"}), 401
 
         if artist:
             if password == artist.get("Password"):
-                token = generate_token("Artist")
                 return jsonify({
-                "message": "Artist Login Successfully",
-                "Token": token,
-                "Role": "Artist"
-}), 200
-
+                    "message": "Artist Login Successfully",
+                    "Token": generate_token("Artist", artist),
+                    "Role": "Artist"
+                }), 200
+            return jsonify({"message": "Wrong Password"}), 401
 
         if user:
             if password == user.get("Password"):
-                token = generate_token("User")
                 return jsonify({
                     "message": "User Login Successfully",
-                    "Token": token,
+                    "Token": generate_token("User", user),
                     "Role": "User"
                 }), 200
-            else:
-                return jsonify({"message": "wrong Password"}), 401
+            return jsonify({"message": "Wrong Password"}), 401
 
-
-       
         return jsonify({"message": "Email not registered"}), 401
-
+    
     except Exception as e:
-        print("LOGIN ERROR:", e)    
+        print("LOGIN ERROR:", e)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/profile", methods=["GET"])
 def get_profile():
@@ -521,6 +515,7 @@ def get_profile():
    
     if isinstance(user.get("_id"), ObjectId):
         user['_id'] = str(user['_id'])
+        user["Role"] = decoded.get("Role") 
 
     return jsonify(user), 200
 
