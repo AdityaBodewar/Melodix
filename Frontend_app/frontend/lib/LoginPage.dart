@@ -226,26 +226,34 @@ class _LoginPageState extends State<LoginPage> {
     required TextEditingController controller,
     required String label,
     required IconData icon,
-
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return TextField(
-
-
-    controller: controller,
-      style: const TextStyle(color: Colors.black),
+      controller: controller,
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.black),
-        prefixIcon: Icon(icon, color: Colors.grey),
+        labelStyle: TextStyle(
+          color: isDark ? Colors.white70 : Colors.black54,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: isDark ? Colors.white70 : Colors.grey,
+        ),
         filled: true,
-        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
-
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        fillColor: isDark
+            ? const Color(0xFF1E1E1E) // proper dark input bg
+            : Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
+
 
   Widget _buildPasswordField() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -253,22 +261,34 @@ class _LoginPageState extends State<LoginPage> {
     return TextField(
       controller: password,
       obscureText: hidePassword,
-      style: const TextStyle(color: Colors.black),
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black,
+      ),
       decoration: InputDecoration(
         labelText: "Password",
-        labelStyle: const TextStyle(color: Colors.black),
-        prefixIcon: const Icon(Icons.lock, color: Colors.grey),
+        labelStyle: TextStyle(
+          color: isDark ? Colors.white70 : Colors.black54,
+        ),
+        prefixIcon: Icon(
+          Icons.lock,
+          color: isDark ? Colors.white70 : Colors.grey,
+        ),
         suffixIcon: IconButton(
           icon: Icon(
             hidePassword ? Icons.visibility_off : Icons.visibility,
-            color: Colors.white70,
+            color: isDark ? Colors.white70 : Colors.grey,
           ),
           onPressed: () => setState(() => hidePassword = !hidePassword),
         ),
         filled: true,
-        fillColor: isDark ? Colors.grey.shade900 : Colors.grey.shade200,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        fillColor: isDark
+            ? const Color(0xFF1E1E1E)
+            : Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
+
 }

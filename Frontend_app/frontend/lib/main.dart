@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/LoginPage.dart';
+import 'package:frontend/Registerpage.dart';
 
 import 'MusicController.dart';
 import 'Screens/HomePage.dart';
@@ -24,6 +26,7 @@ Future<void> main() async {
 
   await ThemeController.loadTheme();
   await MusicController.configureAudioSession();
+
 
 
   runApp(const MusicApp());
@@ -81,6 +84,8 @@ class MusicApp extends StatelessWidget {
             '/search': (context) => Searchpage(),
             '/library': (context) => Mylibrary(),
             '/profile': (context) => Profilepage(),
+            '/login' : (context) => LoginPage(),
+            '/register': (context) => RegisterPage(),
           },
         );
       },
