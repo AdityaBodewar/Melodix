@@ -29,6 +29,20 @@ dependencies:
 
 
   cupertino_icons: ^1.0.8
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
+
+flutter_native_splash:
+    color: "#000000"
+    image: assets/images/melodixsplash.png
+    android: true
+    ios: true
+
+
+flutter_launcher_icons:
+    android: true
+    ios: true
+    image_path: assets/images/melodixicon.png
 
 dev_dependencies:
   flutter_test:

@@ -39,9 +39,13 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
   bool get wantKeepAlive => true;
 
   List<Map<String, String>> banners = [
-    {"image": "assets/images/arijit_img.jpeg"},
-    {"image": "assets/images/shreya_img.jpeg"},
-    {"image": "assets/images/udit_img.jpeg"},
+    {"image": "assets/images/arijit4.jpeg"},
+    // {"image": "assets/images/shreyaa.jpeg.jpeg"},
+    // {"image": "assets/images/kishorekumar.jpeg"},
+    // {"image": "assets/images/arijit2.jpeg"},
+    {"image": "assets/images/ladysinger.jpeg"},
+    {"image": "assets/images/uditnarayan.jpeg"},
+    // {"image": "assets/images/himesh.jpeg"},
   ];
 
   @override
@@ -319,7 +323,7 @@ class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin 
     return Column(
       children: [
         SizedBox(
-          height: 190,
+          height: 250,
           child: PageView.builder(
             controller: _bannerController,
             itemCount: banners.length,
