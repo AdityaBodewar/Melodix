@@ -18,7 +18,7 @@ class _SearchScreenState extends State<Searchpage> {
 
   Timer? _debounce;
 
-  // ⭐ LIVE SEARCH (auto trigger when user types)
+
   void _onSearchChanged(String query) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
 
@@ -31,7 +31,6 @@ class _SearchScreenState extends State<Searchpage> {
     });
   }
 
-  // ⭐ BACKEND SEARCH API CALL
   Future<void> _searchSong(String query) async {
     setState(() {
       isLoading = true;
@@ -59,7 +58,6 @@ class _SearchScreenState extends State<Searchpage> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // 🔍 Search Box
             Row(
               children: [
                 Expanded(
@@ -72,7 +70,7 @@ class _SearchScreenState extends State<Searchpage> {
                     child: TextField(
                       controller: _searchController,
 
-                      onChanged: _onSearchChanged, // ⭐ LIVE SEARCH WORKS HERE
+                      onChanged: _onSearchChanged,
 
                       style: TextStyle(
                         color: isDark ? Colors.white : Colors.black,
@@ -166,7 +164,6 @@ class _SearchScreenState extends State<Searchpage> {
       ),
     );
   }
-
   @override
   void dispose() {
     _debounce?.cancel();

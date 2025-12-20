@@ -60,7 +60,7 @@ class _DownloadsPageState extends State<DownloadsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // ⭐ THEME COLORS (AUTO FROM Main Theme)
+
     final bgColor = Theme.of(context).scaffoldBackgroundColor;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
     final subtitleColor = Theme.of(context).brightness == Brightness.dark

@@ -21,34 +21,49 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    HomePage(),
-    Searchpage(),
-    Mylibrary(),
-    Profilepage(),
-  ];
+  late final List<Widget> _screens;
+  late final PageController _pageController;
 
   @override
   void initState() {
     super.initState();
 
+    _screens = [
+      HomePage(),
+      Searchpage(),
+      Mylibrary(),
+      Profilepage(),
+    ];
+
+    _pageController = PageController(initialPage: _currentIndex);
+
     MainScreen.changeTab = (int index) {
-      setState(() {
-        _currentIndex = index;
-      });
+      if (mounted) {
+        setState(() {
+          _currentIndex = index;
+        });
+        _pageController.jumpToPage(index);
+      }
     };
 
-    // Listen to online/offline player state
     MusicController.player.onPlayerStateChanged.listen((state) {
-      setState(() {
-        MusicController.isPlaying = (state == PlayerState.playing);
-      });
+      if (mounted) {
+        setState(() {
+          MusicController.isPlaying = (state == PlayerState.playing);
+        });
+      }
     });
   }
 
   @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    DateTime? lastPressed; // <-- ADD THIS
+    DateTime? lastPressed;
 
     return WillPopScope(
       onWillPop: () async {
@@ -65,17 +80,25 @@ class _MainScreenState extends State<MainScreen> {
             ),
           );
 
-          return false; // <-- DO NOT EXIT
+          return false;
         }
 
-        return true; // <-- EXIT APP
+        return true;
       },
-
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         body: Stack(
           children: [
-            _screens[_currentIndex],
+            PageView(
+              controller: _pageController,
+              physics: NeverScrollableScrollPhysics(), // Disable swipe
+              children: _screens,
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+            ),
             Positioned(
               left: 0,
               right: 0,
@@ -112,13 +135,10 @@ class _MainScreenState extends State<MainScreen> {
       ),
       child: BottomNavigationBar(
         currentIndex: _currentIndex,
-
-        // 🔥 Main Logic For Restricting Pages
         onTap: (index) async {
           SharedPreferences prefs = await SharedPreferences.getInstance();
           String? token = prefs.getString("token");
 
-          // 🔥 User is NOT logged in & trying to open My Library (2) or Profile (3)
           if ((index == 2 || index == 3) && (token == null || token.isEmpty)) {
             Navigator.push(
               context,
@@ -127,17 +147,15 @@ class _MainScreenState extends State<MainScreen> {
             return;
           }
 
-          // Otherwise allow navigation
           setState(() => _currentIndex = index);
+          _pageController.jumpToPage(index);
         },
-
         type: BottomNavigationBarType.fixed,
         backgroundColor: bgColor,
         selectedItemColor: Colors.blue,
         unselectedItemColor: unselected,
         selectedFontSize: 12,
         unselectedFontSize: 12,
-
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -160,7 +178,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-
   Widget _buildNowPlayingBar() {
     if (MusicController.title == null) {
       return SizedBox();
@@ -179,7 +196,6 @@ class _MainScreenState extends State<MainScreen> {
     return GestureDetector(
       onTap: () {
         if (MusicController.isOffline == true) {
-          // open offline player page
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -192,7 +208,6 @@ class _MainScreenState extends State<MainScreen> {
             ),
           );
         } else {
-          // open online player page
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -204,7 +219,6 @@ class _MainScreenState extends State<MainScreen> {
           );
         }
       },
-
       child: Container(
         height: 65,
         margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -219,10 +233,8 @@ class _MainScreenState extends State<MainScreen> {
             ),
           ],
         ),
-
         child: Row(
           children: [
-            // SONG IMAGE
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
@@ -232,10 +244,7 @@ class _MainScreenState extends State<MainScreen> {
                 fit: BoxFit.cover,
               ),
             ),
-
             SizedBox(width: 10),
-
-            // TITLE + ARTIST
             Expanded(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -264,8 +273,6 @@ class _MainScreenState extends State<MainScreen> {
                 ],
               ),
             ),
-
-            // PLAY / PAUSE BUTTON
             IconButton(
               icon: Icon(
                 MusicController.isPlaying ? Icons.pause : Icons.play_arrow,
@@ -274,7 +281,6 @@ class _MainScreenState extends State<MainScreen> {
               ),
               onPressed: () async {
                 if (MusicController.isOffline == true) {
-                  // offline control
                   if (MusicController.isPlaying) {
                     await MusicController.player.pause();
                   } else {
@@ -282,13 +288,11 @@ class _MainScreenState extends State<MainScreen> {
                   }
                   MusicController.isPlaying = !MusicController.isPlaying;
                 } else {
-                  // online control
                   MusicController.togglePlayPause();
                 }
                 setState(() {});
               },
             ),
-
             SizedBox(width: 8),
           ],
         ),

@@ -17,12 +17,10 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController email = TextEditingController();
   final TextEditingController password = TextEditingController();
 
+
   bool hidePassword = true;
   bool isLoading = false;
 
-  // =====================================================================================
-  // 🔥 MAIN LOGIN FUNCTION
-  // =====================================================================================
   Future<void> handleLogin() async {
     if (isLoading) return;
 
@@ -40,11 +38,7 @@ class _LoginPageState extends State<LoginPage> {
 
     setState(() => isLoading = false);
 
-    print("📌 FINAL RESULT = $result");
-
-    // -------------------------
-    // NEW FIXED LOGIN CHECK
-    // -------------------------
+    print(" FINAL RESULT = $result");
 
     final status = result["status"];
     final data = result["data"];
@@ -52,9 +46,11 @@ class _LoginPageState extends State<LoginPage> {
     print("STATUS = $status");
     print("DATA = $data");
 
-   //❌ Wrong email or wrong password
     if (status == 401) {
-      String msg = (data["message"] ?? data["error"] ?? "").toString().trim().toLowerCase();
+      String msg = (data["message"] ?? data["error"] ?? "")
+          .toString()
+          .trim()
+          .toLowerCase();
 
       if (msg.contains("email") && msg.contains("not") && msg.contains("registered")) {
         showError("Email not registered");
@@ -70,15 +66,13 @@ class _LoginPageState extends State<LoginPage> {
 
 
 
-    // ❌ Server error
+
     if (status == 500) {
       showError(data["error"] ?? "Server error");
       return;
     }
 
-    // -------------------------
-    // SUCCESSFUL LOGIN
-    // -------------------------
+
     if (status == 200) {
       final role = data["Role"] ?? "";
       final token = data["Token"] ?? "";
@@ -87,9 +81,9 @@ class _LoginPageState extends State<LoginPage> {
       await prefs.setString("token", token);
       await prefs.setString("role", role);
 
-      await prefs.setString("fullname", data["Fullname"] ?? "");
-      await prefs.setString("email", data["Email"] ?? "");
-
+      // await prefs.setString("fullname", data["Fullname"] ?? "");
+      // await prefs.setString("email", data["Email"] ?? "");
+      //
       print("FULLNAME FROM BACKEND = ${data["Fullname"]}");
       print("EMAIL FROM BACKEND = ${data["Email"]}");
 
@@ -111,17 +105,13 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // ❌ Fallback (unexpected issue)
     showError("Unexpected error occurred");
   }
 
 
 
-  // =====================================================================================
-  // 🔥 SNACKBAR HELPERS
-  // =====================================================================================
   void showError(String msg) {
-    FocusScope.of(context).unfocus();     // 🔥 Close keyboard
+    FocusScope.of(context).unfocus();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(msg),
@@ -144,9 +134,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
 
-  // =====================================================================================
-  // UI
-  // =====================================================================================
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -234,51 +222,73 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // =====================================================================================
-  // INPUT FIELD
-  // =====================================================================================
   Widget _buildInputField({
     required TextEditingController controller,
     required String label,
     required IconData icon,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black,
+      ),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: Icon(icon, color: Colors.white70),
+        labelStyle: TextStyle(
+          color: isDark ? Colors.white70 : Colors.black54,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: isDark ? Colors.white70 : Colors.grey,
+        ),
         filled: true,
-        fillColor: const Color(0xFF1E1E1E),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        fillColor: isDark
+            ? const Color(0xFF1E1E1E) // proper dark input bg
+            : Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
 
-  // =====================================================================================
-  // PASSWORD FIELD
-  // =====================================================================================
+
   Widget _buildPasswordField() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextField(
       controller: password,
       obscureText: hidePassword,
-      style: const TextStyle(color: Colors.white),
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black,
+      ),
       decoration: InputDecoration(
         labelText: "Password",
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: const Icon(Icons.lock, color: Colors.white70),
+        labelStyle: TextStyle(
+          color: isDark ? Colors.white70 : Colors.black54,
+        ),
+        prefixIcon: Icon(
+          Icons.lock,
+          color: isDark ? Colors.white70 : Colors.grey,
+        ),
         suffixIcon: IconButton(
           icon: Icon(
             hidePassword ? Icons.visibility_off : Icons.visibility,
-            color: Colors.white70,
+            color: isDark ? Colors.white70 : Colors.grey,
           ),
           onPressed: () => setState(() => hidePassword = !hidePassword),
         ),
         filled: true,
-        fillColor: const Color(0xFF1E1E1E),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+        fillColor: isDark
+            ? const Color(0xFF1E1E1E)
+            : Colors.grey.shade200,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
       ),
     );
   }
+
 }

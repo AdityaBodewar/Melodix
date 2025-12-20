@@ -1,17 +1,16 @@
-// only changed parts, full file ready to paste
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
+import 'package:frontend/AlbumsPage.dart';
 import 'package:frontend/AllSongsPage.dart';
+import 'package:frontend/ArtistSongsPage.dart';
+import 'package:frontend/DownloadsPage.dart';
 import 'package:frontend/LoginPage.dart';
 import 'package:frontend/Registerpage.dart';
 import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/SongPlayerPage.dart';
-import 'package:frontend/adminPanel/AddMusicForm.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
-import 'package:frontend/adminPanel/adminloginpage.dart';
 import 'package:frontend/main_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -20,52 +19,105 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with AutomaticKeepAliveClientMixin {
   int _currentBanner = 0;
   final PageController _bannerController = PageController();
+  Timer? _bannerTimer;
 
   List<dynamic> topSongs = [];
+  List<dynamic> artists = [];
+  List<dynamic> recommendedSongs = [];
+
   bool isLoading = true;
-  Future<void> loadSongs() async {
-    setState(() {
-      isLoading = true;
-    });
+  bool artistLoading = true;
+  bool _hasLoadedOnce = false;
 
-    // 🔥 STEP 1: Clear previous songs to avoid duplicates
-    topSongs.clear();
+  DateTime? _lastLoadTime;
+  static const _cacheValidDuration = Duration(minutes: 10);
 
-    // 🔥 STEP 2: Fetch fresh updated list
-    final newSongs = await ApiService.fetchAllMusic();
-
-    // 🔥 STEP 3: Replace list
-    topSongs = newSongs;
-
-    setState(() {
-      isLoading = false;
-    });
-  }
-
-
+  @override
+  bool get wantKeepAlive => true;
 
   List<Map<String, String>> banners = [
-    {"image": "assets/images/arijit_img.jpeg"},
-    {"image": "assets/images/shreya_img.jpeg"},
-    {"image": "assets/images/udit_img.jpeg"},
-  ];
-
-  List<Map<String, String>> recentlyPlayed = [
-    {'title': 'Ae Kash Ke Hum', 'artist': 'Kumar Sanu'},
-    {'title': 'Jitni Dafa', 'artist': 'Armaan Malik'},
-    {'title': 'Zara Sa', 'artist': 'KK'},
+    {"image": "assets/images/arijit4.jpeg"},
+    // {"image": "assets/images/shreyaa.jpeg.jpeg"},
+    // {"image": "assets/images/kishorekumar.jpeg"},
+    // {"image": "assets/images/arijit2.jpeg"},
+    {"image": "assets/images/ladysinger.jpeg"},
+    {"image": "assets/images/uditnarayan.jpeg"},
+    // {"image": "assets/images/himesh.jpeg"},
   ];
 
   @override
   void initState() {
     super.initState();
-    loadSongs();
+    _loadInitialData();
+    _startBannerTimer();
+  }
 
-    Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_bannerController.hasClients) {
+  void _loadInitialData() {
+    if (!_hasLoadedOnce) {
+      loadSongs();
+      loadArtists();
+    }
+  }
+
+  Future<void> loadSongs({bool forceRefresh = false}) async {
+    if (!forceRefresh &&
+        _hasLoadedOnce &&
+        _lastLoadTime != null &&
+        DateTime.now().difference(_lastLoadTime!) < _cacheValidDuration) {
+      return;
+    }
+
+
+    if (mounted) {
+      setState(() {
+        isLoading = true;
+      });
+    }
+
+    topSongs.clear();
+    final newSongs = await ApiService.fetchAllMusic();
+
+    if (mounted) {
+      setState(() {
+        topSongs = newSongs;
+        recommendedSongs = List.from(newSongs)..shuffle();
+        recommendedSongs = recommendedSongs.take(6).toList();
+        isLoading = false;
+        _hasLoadedOnce = true;
+        _lastLoadTime = DateTime.now();
+      });
+    }
+  }
+
+  Future<void> loadArtists({bool forceRefresh = false}) async {
+    if (!forceRefresh && artists.isNotEmpty) {
+      return;
+    }
+
+
+    if (mounted) {
+      setState(() {
+        artistLoading = true;
+      });
+    }
+
+    final data = await ApiService.fetchAllArtists();
+
+    if (mounted) {
+      setState(() {
+        artists = data;
+        artistLoading = false;
+      });
+    }
+  }
+
+  void _startBannerTimer() {
+    _bannerTimer?.cancel();
+    _bannerTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (_bannerController.hasClients && mounted) {
         _currentBanner++;
         if (_currentBanner == banners.length) {
           _currentBanner = 0;
@@ -80,7 +132,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   @override
+  void dispose() {
+    _bannerTimer?.cancel();
+    _bannerController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
 
@@ -112,10 +173,8 @@ class _HomePageState extends State<HomePage> {
                 onPressed: () async {
                   SharedPreferences prefs = await SharedPreferences.getInstance();
                   String? token = prefs.getString("token");
-
                   final isDark = Theme.of(context).brightness == Brightness.dark;
 
-                  // 👉 IF USER IS LOGGED IN → GO TO PROFILE PAGE
                   if (token != null && token.isNotEmpty) {
                     Navigator.push(
                       context,
@@ -124,7 +183,6 @@ class _HomePageState extends State<HomePage> {
                     return;
                   }
 
-                  // 👉 IF NOT LOGGED IN → SHOW LOGIN / REGISTER OPTIONS
                   showModalBottomSheet(
                     context: context,
                     backgroundColor: isDark ? Colors.black : Colors.white,
@@ -135,7 +193,6 @@ class _HomePageState extends State<HomePage> {
                       return Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-
                           Padding(
                             padding: const EdgeInsets.all(16.0),
                             child: Text(
@@ -147,51 +204,26 @@ class _HomePageState extends State<HomePage> {
                               ),
                             ),
                           ),
-
-                          Divider(
-                            height: 1,
-                            color: isDark ? Colors.white24 : Colors.black12,
-                          ),
-
-                          // LOGIN BTN
+                          Divider(height: 1, color: isDark ? Colors.white24 : Colors.black12),
                           ListTile(
-                            leading: Icon(Icons.login,
-                                color: isDark ? Colors.white : Colors.black87),
-                            title: Text("Login",
-                                style: TextStyle(
-                                    color: isDark ? Colors.white : Colors.black)),
+                            leading: Icon(Icons.login, color: isDark ? Colors.white : Colors.black87),
+                            title: Text("Login", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
                             onTap: () {
                               Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => LoginPage()),
-                              );
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => LoginPage()));
                             },
                           ),
-
-                          // REGISTER BTN
                           ListTile(
-                            leading: Icon(Icons.app_registration,
-                                color: isDark ? Colors.white : Colors.black87),
-                            title: Text("Register",
-                                style: TextStyle(
-                                    color: isDark ? Colors.white : Colors.black)),
+                            leading: Icon(Icons.app_registration, color: isDark ? Colors.white : Colors.black87),
+                            title: Text("Register", style: TextStyle(color: isDark ? Colors.white : Colors.black)),
                             onTap: () {
                               Navigator.pop(context);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => RegisterPage()),
-                              );
+                              Navigator.push(context, MaterialPageRoute(builder: (_) => RegisterPage()));
                             },
                           ),
-
-                          // CANCEL
                           ListTile(
                             leading: const Icon(Icons.close, color: Colors.redAccent),
-                            title: const Text(
-                              "Cancel",
-                              style: TextStyle(color: Colors.redAccent),
-                            ),
+                            title: const Text("Cancel", style: TextStyle(color: Colors.redAccent)),
                             onTap: () => Navigator.pop(context),
                           ),
                         ],
@@ -199,9 +231,6 @@ class _HomePageState extends State<HomePage> {
                     },
                   );
                 },
-
-
-
               ),
             ),
           ),
@@ -210,10 +239,11 @@ class _HomePageState extends State<HomePage> {
       drawer: _buildDrawer(),
       body: RefreshIndicator(
         onRefresh: () async {
-          await loadSongs();      // 🔥 reload songs
+          await loadSongs(forceRefresh: true);
+          await loadArtists(forceRefresh: true);
         },
         child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(), // 🔥 allow scroll & pull even if short
+          physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.only(bottom: 140),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -232,10 +262,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Drawer
   Widget _buildDrawer() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Drawer(
       backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
       child: ListView(
@@ -244,9 +272,7 @@ class _HomePageState extends State<HomePage> {
           DrawerHeader(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: isDark
-                    ? [Colors.blue, Colors.lightBlue]
-                    : [Colors.blue.shade300, Colors.lightBlueAccent],
+                colors: isDark ? [Colors.blue, Colors.lightBlue] : [Colors.blue.shade300, Colors.lightBlueAccent],
               ),
             ),
             child: const Column(
@@ -255,21 +281,14 @@ class _HomePageState extends State<HomePage> {
               children: [
                 Icon(Icons.music_note, size: 50, color: Colors.white),
                 SizedBox(height: 10),
-                Text(
-                  'Music App',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                Text('Music App', style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
               ],
             ),
           ),
           _buildDrawerItem(Icons.home, 'Home'),
           _buildDrawerItem(Icons.favorite, 'Favorites'),
-          _buildDrawerItem(Icons.playlist_play, 'Playlists'),
-          _buildDrawerItem(Icons.library_music, 'Jio Tunes'),
+          _buildDrawerItem(Icons.album, 'Albums'),
+          _buildDrawerItem(Icons.download_sharp, 'DownloadSong'),
           const Divider(),
           _buildDrawerItem(Icons.settings, 'Settings'),
           _buildDrawerItem(Icons.info, 'About us'),
@@ -280,92 +299,74 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildDrawerItem(IconData icon, String title) {
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
-
     return ListTile(
       leading: Icon(icon, color: textColor),
       title: Text(title, style: TextStyle(color: textColor)),
       onTap: () {
         if (title == 'Settings') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const SettingsPage()),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const SettingsPage()));
         } else if (title == 'Home') {
           Navigator.pop(context);
           MainScreen.changeTab?.call(0);
         } else if (title == 'About us') {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const AboutUsPage()),
-          );
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const AboutUsPage()));
+        } else if(title == 'Albums'){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const AlbumsPage()));
+        } else if(title == 'DownloadSong'){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => const DownloadsPage()));
         }
       },
     );
   }
 
-  // Banner slider same as before...
-  Widget buildBannerSlider() { /* unchanged from your version */ return Column(
-    children: [
-      SizedBox(
-        height: 190,
-        child: PageView.builder(
-          controller: _bannerController,
-          itemCount: banners.length,
-          onPageChanged: (index) {
-            setState(() {
-              _currentBanner = index;
-            });
-          },
-          itemBuilder: (context, index) {
-            return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(16),
-                image: DecorationImage(
-                  image: AssetImage(banners[index]["image"]!),
-                  fit: BoxFit.cover,
+  Widget buildBannerSlider() {
+    return Column(
+      children: [
+        SizedBox(
+          height: 250,
+          child: PageView.builder(
+            controller: _bannerController,
+            itemCount: banners.length,
+            onPageChanged: (index) => setState(() => _currentBanner = index),
+            itemBuilder: (context, index) {
+              return Container(
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  image: DecorationImage(image: AssetImage(banners[index]["image"]!), fit: BoxFit.cover),
                 ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(banners.length, (index) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 4),
+              height: 6,
+              width: _currentBanner == index ? 18 : 6,
+              decoration: BoxDecoration(
+                color: _currentBanner == index ? Colors.white : Colors.white54,
+                borderRadius: BorderRadius.circular(3),
               ),
             );
-          },
+          }),
         ),
-      ),
-      const SizedBox(height: 8),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: List.generate(banners.length, (index) {
-          return AnimatedContainer(
-            duration: const Duration(milliseconds: 300),
-            margin: const EdgeInsets.symmetric(horizontal: 4),
-            height: 6,
-            width: _currentBanner == index ? 18 : 6,
-            decoration: BoxDecoration(
-              color: _currentBanner == index
-                  ? Colors.white
-                  : Colors.white54,
-              borderRadius: BorderRadius.circular(3),
-            ),
-          );
-        }),
-      ),
-    ],
-  );
+      ],
+    );
   }
 
   Widget _buildRecentlyPlayed(Color textColor, bool isDark) {
+    if (recommendedSongs.isEmpty) return const SizedBox();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text(
-            'Recently Played',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          child: Text('Recommended', style: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold)),
         ),
         const SizedBox(height: 12),
         SizedBox(
@@ -373,36 +374,28 @@ class _HomePageState extends State<HomePage> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: recentlyPlayed.length,
+            itemCount: recommendedSongs.length,
             itemBuilder: (context, index) {
-              return Container(
-                width: 130,
-                margin: const EdgeInsets.symmetric(horizontal: 4),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 130,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.blue.withOpacity(0.3),
+              final song = recommendedSongs[index];
+              return InkWell(
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SongPlayerPage(songs: recommendedSongs, currentIndex: index))),
+                child: Container(
+                  width: 130,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 130,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          image: DecorationImage(image: NetworkImage(song["Image"]), fit: BoxFit.cover),
+                        ),
                       ),
-                      child: const Center(
-                        child: Icon(Icons.music_note, size: 50, color: Colors.white),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      recentlyPlayed[index]['title']!,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                      const SizedBox(height: 8),
+                      Text(song["Title"], style: TextStyle(color: textColor, fontSize: 13, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
                 ),
               );
             },
@@ -421,27 +414,10 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Top Charts',
-                style: TextStyle(
-                  color: textColor,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text('Top Charts', style: TextStyle(color: textColor, fontSize: 20, fontWeight: FontWeight.bold)),
               TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AllSongsPage(songs: topSongs),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'View All',
-                  style: TextStyle(color: Colors.blue),
-                ),
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => AllSongsPage(songs: topSongs))),
+                child: const Text('View All', style: TextStyle(color: Colors.blue)),
               ),
             ],
           ),
@@ -456,17 +432,7 @@ class _HomePageState extends State<HomePage> {
             itemBuilder: (context, index) {
               final song = topSongs[index];
               return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SongPlayerPage(
-                        songs: topSongs,
-                        currentIndex: index,
-                      ),
-                    ),
-                  );
-                },
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SongPlayerPage(songs: topSongs, currentIndex: index))),
                 child: _buildSongCard(song),
               );
             },
@@ -482,119 +448,74 @@ class _HomePageState extends State<HomePage> {
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        image: DecorationImage(
-          image: NetworkImage(song["Image"]),
-          fit: BoxFit.cover,
-        ),
+        image: DecorationImage(image: NetworkImage(song["Image"]), fit: BoxFit.cover),
       ),
       child: Container(
         alignment: Alignment.bottomCenter,
         padding: const EdgeInsets.all(8),
         color: Colors.black.withOpacity(0.4),
-        child: Text(
-          song["Title"],
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-          textAlign: TextAlign.center,
-        ),
+        child: Text(song["Title"], style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
       ),
     );
   }
 
   Widget _buildArtistAlbum(Color textColor) {
+    if (artistLoading) return const Center(child: CircularProgressIndicator());
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Artists',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                  fontSize: 20,
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AllSongsPage(songs: topSongs),
-                    ),
-                  );
-                },
-                child: const Text(
-                  'View All',
-                  style: TextStyle(color: Colors.blue),
-                ),
-              ),
-            ],
-          ),
+          child: Text('Artists', style: TextStyle(fontWeight: FontWeight.bold, color: textColor, fontSize: 20)),
         ),
         const SizedBox(height: 12),
         SizedBox(
-          height: 160,
+          height: 190,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 12),
-            itemCount: topSongs.length,
+            itemCount: artists.length,
             itemBuilder: (context, index) {
-              final song = topSongs[index];
+              final artist = artists[index];
               return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SongPlayerPage(
-                        songs: topSongs,
-                        currentIndex: index,
-                      ),
-                    ),
-                  );
-                },
-                child: _buildArtistCard(song),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ArtistSongsPage(artist: artist))),
+                child: _buildArtistCard(artist),
               );
             },
           ),
-        )
+        ),
       ],
     );
   }
 
-  Widget _buildArtistCard(dynamic song) {
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color ?? Colors.white;
+  Widget _buildArtistCard(dynamic artist) {
+    final String imageUrl = artist["Image"] ?? "";
+    final String name = artist["Fullname"] ?? "Unknown Artist";
     return Container(
-      width: 120,
+      width: 160,
       margin: const EdgeInsets.symmetric(horizontal: 8),
       child: Column(
         children: [
-          ClipOval(
-            child: Image.network(
-              song["Image"],
-              height: 120,
-              width: 120,
-              fit: BoxFit.cover,
+          Container(
+            width: 140,
+            height: 140,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 4))],
+            ),
+            child: ClipOval(
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: Colors.grey.shade300,
+                  child: const Icon(Icons.person, size: 60, color: Colors.grey),
+                ),
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(
-            song["Singer"],
-            style: TextStyle(
-              color: textColor,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
+          const SizedBox(height: 10),
+          Text(name, maxLines: 1, overflow: TextOverflow.ellipsis, textAlign: TextAlign.center, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600)),
         ],
       ),
     );

@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:frontend/AboutUsPage.dart';
 import 'package:frontend/EditProfilePage.dart';
 import 'package:frontend/HelpSupportPage.dart';
-import 'package:frontend/LoginPage.dart';
 import 'package:frontend/PrivacyPage.dart';
 import 'package:frontend/SettingsPage.dart';
 import 'package:frontend/TermsPage.dart';
+import 'package:frontend/adminPanel/AddMusicForm.dart';
+import 'package:frontend/handleApi/ApiService .dart';
 import 'package:frontend/main_screen.dart';
 import 'package:frontend/theme_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../MusicController.dart';
 
 class Profilepage extends StatefulWidget {
   const Profilepage({Key? key}) : super(key: key);
@@ -17,174 +19,216 @@ class Profilepage extends StatefulWidget {
   State<Profilepage> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<Profilepage> {
+class _ProfileScreenState extends State<Profilepage> with AutomaticKeepAliveClientMixin {
   String name = "Music Lover";
   String email = "musiclover@example.com";
+  String role = "User";
+  String? profileImage;
+  bool forceRefreshImage = false;
+  bool isProfileLoaded = false;
+  bool _hasLoadedOnce = false;
 
-  bool isProfileLoaded = false; // 🔥 Stops flicker
+  @override
+  bool get wantKeepAlive => true;
 
-  Future<void> loadProfileData() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<void> loadProfileData({bool forceRefresh = false}) async {
+    // Skip loading if already loaded and not forcing refresh
+    if (!forceRefresh && _hasLoadedOnce) {
+      print("✅ Using cached profile data - no reload needed");
+      return;
+    }
 
-    setState(() {
-      name = prefs.getString("fullname") ?? "Music Lover";
-      email = prefs.getString("email") ?? "musiclover@example.com";
-      isProfileLoaded = true; // 🔥 Now UI can show data
-    });
+
+    final result = await ApiService.getProfile();
+
+    if (result["status"] == 200) {
+      final user = result["data"];
+
+      if (mounted) {
+        setState(() {
+          name = user["Fullname"] ?? "Music Lover";
+          email = user["Email"] ?? "musiclover@example.com";
+          role = (user["Role"] ?? "User").toString();
+          profileImage = user["Image"] ?? user["Profile"];
+          isProfileLoaded = true;
+          forceRefreshImage = false;
+          _hasLoadedOnce = true;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          isProfileLoaded = true;
+          _hasLoadedOnce = true;
+        });
+      }
+    }
   }
 
   @override
   void initState() {
     super.initState();
-    loadProfileData();
+    if (!_hasLoadedOnce) {
+      loadProfileData();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
 
-    // 🔥 Show loading indicator until SharedPreferences loads
     if (!isProfileLoaded) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text("Profile"),
-          centerTitle: true,
-        ),
-        body: const Center(
-          child: CircularProgressIndicator(),
-        ),
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'Profile',
+          "Profile",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
+      body: RefreshIndicator(
+        onRefresh: () => loadProfileData(forceRefresh: true),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 30),
 
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 120),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 30),
-
-            // Avatar
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.blue,
-              child: const Icon(Icons.person, size: 60, color: Colors.white),
-            ),
-
-            const SizedBox(height: 16),
-
-            // Name
-            Text(
-              name,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.blue,
+                backgroundImage: (profileImage != null && profileImage!.isNotEmpty)
+                    ? NetworkImage(
+                  forceRefreshImage
+                      ? "${profileImage!}?t=${DateTime.now().millisecondsSinceEpoch}"
+                      : profileImage!,
+                )
+                    : null,
+                child: (profileImage == null || profileImage!.isEmpty)
+                    ? const Icon(Icons.person, size: 60, color: Colors.white)
+                    : null,
               ),
-            ),
 
-            const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
-            // Email
-            Text(
-              email,
-              style: TextStyle(
-                color: Theme.of(context).hintColor,
-                fontSize: 14,
+              Text(
+                name,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
 
-            const SizedBox(height: 30),
+              const SizedBox(height: 8),
 
-            // Options
-            _buildProfileOption(Icons.edit, 'Edit Profile', () async {
-              SharedPreferences prefs = await SharedPreferences.getInstance();
+              Text(
+                email,
+                style: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontSize: 14,
+                ),
+              ),
 
-              String? email = prefs.getString("email");
+              const SizedBox(height: 30),
 
-              if (email == null || email.isEmpty) {
-                // ❌ User not logged in
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text("Please login first to edit profile"),
-                    backgroundColor: Colors.red,
+              if (role.toLowerCase() == "artist")
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: ListTile(
+                    tileColor: Colors.blue.withOpacity(0.12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    leading: const Icon(Icons.library_music, color: Colors.blue),
+                    title: const Text(
+                      "Add Song",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.blue),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AddMusicForm()),
+                      );
+                    },
                   ),
+                ),
+
+              _buildProfileOption(Icons.edit, 'Edit Profile', () async {
+                final updated = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditProfilePage()),
                 );
 
+                if (updated == true) {
+                  forceRefreshImage = true;
+                  await loadProfileData(forceRefresh: true);
+                }
+              }),
+
+              _buildProfileOption(Icons.notifications, 'Notifications', () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                  MaterialPageRoute(builder: (_) => const SettingsPage()),
                 );
-                return;
-              }
+              }),
 
-              // ✔ User is logged in → allow Edit
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const EditProfilePage()),
-              );
-            }),
+              _buildProfileOption(Icons.privacy_tip, 'Privacy', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrivacyPage()),
+                );
+              }),
 
+              _buildProfileOption(Icons.dark_mode, 'Theme', () {
+                ThemeController.toggleTheme();
+              }),
 
-            _buildProfileOption(Icons.notifications, 'Notifications', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsPage()),
-              );
-            }),
+              _buildProfileOption(Icons.help, 'Help & Support', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                );
+              }),
 
-            _buildProfileOption(Icons.privacy_tip, 'Privacy', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PrivacyPage()),
-              );
-            }),
+              _buildProfileOption(Icons.info, 'About', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutUsPage()),
+                );
+              }),
 
-            _buildProfileOption(Icons.dark_mode, 'Theme', () {
-              ThemeController.toggleTheme();
-            }),
+              _buildProfileOption(Icons.policy, "Terms & Condition", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TermsPage()),
+                );
+              }),
 
-            _buildProfileOption(Icons.help, 'Help & Support', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const HelpSupportPage()),
-              );
-            }),
+              _buildProfileOption(Icons.logout, "Logout", showLogoutConfirmDialog),
 
-            _buildProfileOption(Icons.info, 'About', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AboutUsPage()),
-              );
-            }),
-
-            _buildProfileOption(Icons.policy, "Terms & Condition", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TermsPage()),
-              );
-            }),
-
-            // LOGOUT
-            _buildProfileOption(Icons.logout, "Logout", showLogoutConfirmDialog),
-
-            const SizedBox(height: 20),
-          ],
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ------------------------ Profile Tile Builder ------------------------
   Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
@@ -201,96 +245,44 @@ class _ProfileScreenState extends State<Profilepage> {
     );
   }
 
-  // ------------------------ Edit Profile Dialog ------------------------
-  void _showEditDialog() {
-    TextEditingController nameController = TextEditingController(text: name);
-    TextEditingController emailController = TextEditingController(text: email);
-
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Profile'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameController,
-                decoration: const InputDecoration(labelText: 'Name'),
-              ),
-              TextField(
-                controller: emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                setState(() {
-                  name = nameController.text;
-                  email = emailController.text;
-                });
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // ------------------------ Logout ------------------------
   void showLogoutConfirmDialog() {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text("Logout"),
-          content: const Text("Are you sure you want to logout?"),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context), // Cancel
-              child: const Text("Cancel"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.pop(context); // Close dialog
-                await logoutUser();     // Call logout function
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red,
-              ),
-              child: const Text("Yes"),
-            ),
-          ],
-        );
-      },
+      builder: (context) => AlertDialog(
+        title: const Text("Logout"),
+        content: const Text("Are you sure you want to logout?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Cancel"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              await logoutUser();
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text("Yes"),
+          ),
+        ],
+      ),
     );
   }
 
   Future<void> logoutUser() async {
+    await MusicController.reset();
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await prefs.remove("token");
+    await prefs.remove("role");
 
-    setState(() {
-      name = "Music Lover";
-      email = "musiclover@example.com";
-    });
-
-    Navigator.push(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const MainScreen()),
+          (route) => false,
     );
 
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text("Logged out successfully")),
     );
   }
-
 }

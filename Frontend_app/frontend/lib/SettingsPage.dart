@@ -14,7 +14,6 @@ class _SettingsPageState extends State<SettingsPage> {
   bool notificationsEnabled = true;
   double volume = 0.5;
 
-  //  THEME always synced with ThemeController
   String themeMode = ThemeController.themeMode.value.name;
 
   final AudioPlayer globalPlayer = AudioPlayer(); // For controlling global volume
@@ -24,7 +23,6 @@ class _SettingsPageState extends State<SettingsPage> {
     super.initState();
     loadSettings();
 
-    // 🔥 Listen to theme changes everywhere
     ThemeController.themeMode.addListener(() {
       setState(() {
         themeMode = ThemeController.themeMode.value.name;
@@ -39,7 +37,6 @@ class _SettingsPageState extends State<SettingsPage> {
       notificationsEnabled = prefs.getBool("notifications") ?? true;
       volume = prefs.getDouble("volume") ?? 0.5;
 
-      // 🔥 Always match global theme
       themeMode = ThemeController.themeMode.value.name;
     });
 
@@ -72,7 +69,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
         children: [
 
-          // ---------------- THEME SECTION ----------------
           Text("Theme", style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
 
@@ -130,7 +126,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 20),
 
-          // ---------------- VOLUME SECTION ----------------
           Text("Playback Volume",
               style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),
@@ -166,7 +161,6 @@ class _SettingsPageState extends State<SettingsPage> {
 
           const SizedBox(height: 20),
 
-          // ---------------- NOTIFICATION SECTION ----------------
           Text("Notifications",
               style: TextStyle(color: subtitleColor, fontSize: 16)),
           const SizedBox(height: 6),

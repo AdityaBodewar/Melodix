@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:frontend/handleApi/ApiService .dart';
 
 class EditProfilePage extends StatefulWidget {
@@ -12,158 +11,183 @@ class EditProfilePage extends StatefulWidget {
 }
 
 class _EditProfilePageState extends State<EditProfilePage> {
-  TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
+  final TextEditingController fullnameController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
-  String? profileImagePath;
-  String oldEmail = "";
-  bool isLoading = false;
+  File? selectedImage;
+  String? profileImageUrl;
+
+  bool isLoading = true;
+  bool isSaving = false;
 
   @override
   void initState() {
     super.initState();
-    loadStoredUser();
+    loadProfile();
   }
 
-  // Load existing stored user data
-  Future<void> loadStoredUser() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  Future<void> loadProfile() async {
+    final result = await ApiService.getProfile();
+
+    if (result["status"] == 200) {
+      final user = result["data"];
+
+      fullnameController.text = user["Fullname"] ?? "";
+      usernameController.text = user["Username"] ?? "";
+      emailController.text = user["Email"] ?? "";
+
+      profileImageUrl = user["Image"] ?? user["Profile"];
+    }
+
     setState(() {
-      nameController.text = prefs.getString("fullname") ?? "";
-      emailController.text = prefs.getString("email") ?? "";
-      oldEmail = prefs.getString("email") ?? "";
-      profileImagePath = prefs.getString("profileImage");
+      isLoading = false;
     });
   }
 
-  // Pick image
   Future<void> pickImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 80,
+    );
 
     if (picked != null) {
       setState(() {
-        profileImagePath = picked.path;
+        selectedImage = File(picked.path);
       });
     }
   }
 
-  // SAVE PROFILE
   Future<void> saveProfile() async {
-    setState(() => isLoading = true);
+    if (fullnameController.text.isEmpty ||
+        usernameController.text.isEmpty ||
+        emailController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("All fields are required")),
+      );
+      return;
+    }
 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String role = prefs.getString("role") ?? "";
+    setState(() {
+      isSaving = true;
+    });
 
-    final res = await ApiService.updateProfile(
-      oldEmail: oldEmail,
-      fullname: nameController.text,
-      newEmail: emailController.text.isEmpty ? oldEmail : emailController.text, // FIXED
-      role: role,
-      imagePath: profileImagePath,
+    final success = await ApiService.updateProfile(
+      fullname: fullnameController.text.trim(),
+      username: usernameController.text.trim(),
+      email: emailController.text.trim(),
+      image: selectedImage,
     );
 
-    setState(() => isLoading = false);
+    setState(() {
+      isSaving = false;
+    });
 
-    if (res["status"] == 200) {
-      await prefs.setString("fullname", nameController.text);
-      await prefs.setString("email", emailController.text.isEmpty ? oldEmail : emailController.text);
-
-      if (profileImagePath != null) {
-        await prefs.setString("profileImage", profileImagePath!);
-      }
-
+    if (success) {
+      Navigator.pop(context, true);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Profile updated successfully")),
+        SnackBar(content: Text("Profile update successfully"),backgroundColor: Colors.green,)
       );
 
-      Navigator.pop(context);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(res["data"]["message"] ?? "Update failed")),
+        const SnackBar(content: Text("Profile update failed"),backgroundColor: Colors.red,),
       );
     }
   }
 
-
-
   @override
   Widget build(BuildContext context) {
-    final textColor = Theme.of(context).textTheme.bodyMedium?.color;
+    if (isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Edit Profile", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("Edit Profile"),
+        centerTitle: true,
       ),
-
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
 
-              // PROFILE IMAGE
-              GestureDetector(
-                onTap: pickImage,
-                child: CircleAvatar(
-                  radius: 60,
-                  backgroundColor: Colors.blue,
-                  backgroundImage:
-                  profileImagePath != null ? FileImage(File(profileImagePath!)) : null,
-                  child: profileImagePath == null
-                      ? const Icon(Icons.camera_alt, color: Colors.white, size: 40)
-                      : null,
+            GestureDetector(
+              onTap: pickImage,
+              child: CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.blue,
+                backgroundImage: selectedImage != null
+                    ? FileImage(selectedImage!)
+                    : (profileImageUrl != null && profileImageUrl!.isNotEmpty)
+                    ? NetworkImage(profileImageUrl!)
+                    : null,
+                child: selectedImage == null &&
+                    (profileImageUrl == null ||
+                        profileImageUrl!.isEmpty)
+                    ? const Icon(Icons.person,
+                    size: 60, color: Colors.white)
+                    : null,
+              ),
+            ),
+
+            const SizedBox(height: 8),
+            const Text(
+              "Tap to change profile picture",
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+
+            const SizedBox(height: 30),
+
+            TextField(
+              controller: fullnameController,
+              decoration: const InputDecoration(
+                labelText: "Full Name",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: usernameController,
+              decoration: const InputDecoration(
+                labelText: "Username",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: const InputDecoration(
+                labelText: "Email",
+                border: OutlineInputBorder(),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            SizedBox(
+              width: double.infinity,
+              height: 50,
+              child: ElevatedButton(
+                onPressed: isSaving ? null : saveProfile,
+                child: isSaving
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : const Text(
+                  "Save Changes",
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
-
-              const SizedBox(height: 30),
-
-              // NAME FIELD
-              TextField(
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: "Full Name",
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-
-              const SizedBox(height: 20),
-
-              // EMAIL FIELD
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  labelText: "Email",
-                  labelStyle: TextStyle(color: textColor),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                ),
-              ),
-
-              const SizedBox(height: 30),
-
-              // SAVE BUTTON
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: isLoading ? null : saveProfile,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    backgroundColor: Colors.blue,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text(
-                    "Save",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                ),
-              )
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

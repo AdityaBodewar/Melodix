@@ -10,7 +10,10 @@ from bson.json_util import dumps
 import json
 
 
-secret=os.getenv("SECRET_KEY")
+secret = os.getenv("SECRET_KEY")
+
+
+
 
 @app.route("/addmusic",methods=['POST'])
 def addmusic():
@@ -408,7 +411,6 @@ def getsongofartist(id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-   
 
 
 @app.route("/login_flutter", methods=["POST"])
@@ -464,16 +466,17 @@ def login_flutter():
                 token = generate_token("User", user)
                 return jsonify({
                     "message": "User Login Successfully",
-                    "Token": token,
+                    "Token": generate_token("User", user),
                     "Role": "User"
                 }), 200
             return jsonify({"message": "Wrong Password"}), 401
 
         return jsonify({"message": "Email not registered"}), 401
-
+    
     except Exception as e:
         print("LOGIN ERROR:", e)
         return jsonify({"error": str(e)}), 500
+
 
 @app.route("/profile", methods=["GET"])
 def get_profile():
@@ -516,6 +519,7 @@ def get_profile():
    
     if isinstance(user.get("_id"), ObjectId):
         user['_id'] = str(user['_id'])
+        user["Role"] = decoded.get("Role") 
 
     return jsonify(user), 200
 
