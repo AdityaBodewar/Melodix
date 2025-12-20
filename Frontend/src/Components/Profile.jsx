@@ -15,7 +15,7 @@ const Profile = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/profile", {
+      .get("https://melodix-1.onrender.com/profile", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setProfile(res.data))
@@ -47,7 +47,7 @@ const Profile = () => {
       formData.append("Username", profile.Username);
       if (imageFile) formData.append("Image", imageFile);
 
-      await axios.put("http://localhost:5000/profile", formData, {
+      await axios.put("https://melodix-1.onrender.com/profile", formData, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "multipart/form-data",

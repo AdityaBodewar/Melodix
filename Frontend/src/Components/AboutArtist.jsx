@@ -18,7 +18,7 @@ const AboutArtist = () => {
     const artistId = String(artist._id);
     console.log("Fetching songs for artist ID:", artistId);
 
-    fetch(`http://localhost:5000/getsongofartist/${artistId}`)
+    fetch(`https://melodix-1.onrender.com/getsongofartist/${artistId}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);

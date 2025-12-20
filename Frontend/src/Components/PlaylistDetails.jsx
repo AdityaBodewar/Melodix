@@ -18,7 +18,7 @@ const PlaylistDetails = () => {
     const fetchPlaylistDetails = async () => {
       try {
         const token = localStorage.getItem("Token");
-        const res = await axios.get(`http://localhost:5000/playlist/${playlistId}`, {
+        const res = await axios.get(`https://melodix-1.onrender.com/playlist/${playlistId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setPlaylist(res.data.playlist);

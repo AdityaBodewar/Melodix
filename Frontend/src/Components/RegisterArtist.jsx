@@ -15,7 +15,7 @@ setUser({...user,[e.target.name]:e.target.value});
  
 const handleSubmit=()=>{
    
-    axios.post("http://localhost:5000/registerArtist",user)
+    axios.post("https://melodix-1.onrender.com/registerArtist",user)
     .then(res=>{alert(res.data.message);})
     .catch(error=>{alert(res.data.message);
         console.log(error.data.error);

@@ -8,7 +8,7 @@ const GetAllMusic = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/getallmusic")
+      .get("https://melodix-1.onrender.com/getallmusic")
       .then((res) => setSong(res.data.data))
       .catch((err) => console.log(err));
   }, []);

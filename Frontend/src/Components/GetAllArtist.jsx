@@ -6,7 +6,7 @@ const GetAllArtist = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetch("http://localhost:5000/getallartist")
+    fetch("https://melodix-1.onrender.com/getallartist")
       .then((res) => res.json())
       .then((data) => {
     

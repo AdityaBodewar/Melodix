@@ -48,7 +48,7 @@ const handleSubmit=async()=>{
     formdata.append("audio",audio);
 
 
-  const res=await axios.post("http://localhost:5000/addmusic",formdata,{headers:{"Content-Type":"multipart/form-data","Authorization":`Bearer ${token}`},});
+  const res=await axios.post("https://melodix-1.onrender.com/addmusic",formdata,{headers:{"Content-Type":"multipart/form-data","Authorization":`Bearer ${token}`},});
 alert(res.data.message);   
 }
     catch(e)
