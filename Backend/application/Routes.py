@@ -461,7 +461,7 @@ def login_flutter():
                 "Token": token,
                 "Role": "Artist"
 }), 200
-
+ 
 
         if user:
             if password == user.get("Password"):
