@@ -128,15 +128,7 @@ const Profile = () => {
         {/* Settings Section */}
         <div className="border-t pt-4 space-y-2">
           <h3 className="text-sm font-semibold text-gray-500">Profile Settings</h3>
-          <div className="text-sm text-gray-600 cursor-pointer hover:text-primary">
-            Change Password
-          </div>
-          <div className="text-sm text-gray-600 cursor-pointer hover:text-primary">
-            Privacy Settings
-          </div>
-          <div className="text-sm text-gray-600 cursor-pointer hover:text-primary">
-            Notification Preferences
-          </div>
+         
         </div>
 
         {/* Actions */}

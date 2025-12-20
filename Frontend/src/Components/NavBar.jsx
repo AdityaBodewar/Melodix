@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom"; 
+import { useNavigate } from "react-router-dom";
 import default_profil from "../assets/profile_melodix.webp";
 
 const NavBar = () => {
   const navigate = useNavigate();
-
-  const token = localStorage.getItem("Token"); // ✅ move up
+  const token = localStorage.getItem("Token");
 
   const [search, setSearch] = useState("");
   const [result, setResult] = useState([]);
@@ -19,7 +18,6 @@ const NavBar = () => {
     Image: "",
   });
 
-  // ✅ Fetch profile ONLY if token exists
   useEffect(() => {
     if (!token) return;
 
@@ -38,7 +36,6 @@ const NavBar = () => {
     }
 
     setLoading(true);
-
     axios
       .post("http://localhost:5000/searchmusic", { Title: search })
       .then((res) => {
@@ -52,72 +49,135 @@ const NavBar = () => {
   }, [search]);
 
   const handleProfile = () => {
-    if (token) navigate("/profile");
-    else navigate("/login");
+    navigate(token ? "/profile" : "/login");
   };
 
   const handlePlay = (song) => {
     navigate("/player", { state: { song, autoplay: true } });
   };
 
-  // ✅ Correct image logic
-  let imgsrc = default_profil;
-  if (token && profile.Image) {
-    imgsrc = profile.Image;
-  }
+  const imgsrc = token && profile.Image ? profile.Image : default_profil;
 
   return (
-    <div className="navbar bg-base-100 shadow-sm flex justify-between h-20 relative">
-      <div className="flex">
-        <a className="btn btn-ghost text-xl">Melodix</a>
+    <nav
+      className="
+        fixed top-0 z-50
+        w-[100vw]
+        bg-base-100 shadow-md
+        flex items-center justify-between
+        px-[2vw]
+        h-[clamp(3.5rem,4.5vw,5rem)]
+      "
+    >
+      {/* Logo */}
+      <div className="flex items-center">
+        <span
+          className="
+            font-semibold
+            text-[clamp(1rem,1.6vw,1.4rem)]
+            cursor-pointer
+          "
+        >
+          Melodix
+        </span>
       </div>
 
-      <div className="w-130 relative">
+      {/* Search */}
+      <div className="relative flex-1 mx-[2vw] max-w-[50vw]">
         <input
           type="text"
           placeholder="What do you want to play?"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input input-bordered rounded-3xl md:w-full pl-4 h-13"
+          className="
+            w-full
+            rounded-full
+            input input-bordered
+            px-[1.2vw]
+            h-[clamp(2.3rem,3vw,3rem)]
+            text-[clamp(0.85rem,1.1vw,1rem)]
+          "
         />
 
         {search.trim() !== "" && (
-          <div className="absolute left-0 top-14 w-full bg-gray-600 text-white shadow-lg rounded-xl max-h-80 overflow-y-auto z-50 p-2 flex flex-col gap-2">
-            {loading && <div className="text-center">Loading...</div>}
-            {!loading && result.length === 0 && <div className="text-center">No result found</div>}
+          <div
+            className="
+              absolute top-[calc(100%+0.5vw)]
+              w-full
+              bg-gray-700 text-white
+              rounded-xl shadow-lg
+              max-h-[50vh]
+              overflow-y-auto
+              p-[1vw]
+              flex flex-col gap-[0.8vw]
+              z-50
+            "
+          >
+            {loading && (
+              <div className="text-center text-[clamp(0.8rem,1vw,0.95rem)]">
+                Loading...
+              </div>
+            )}
+
+            {!loading && result.length === 0 && (
+              <div className="text-center text-[clamp(0.8rem,1vw,0.95rem)]">
+                No result found
+              </div>
+            )}
 
             {!loading &&
               result.map((song, index) => (
                 <div
                   key={index}
-                  className="flex items-center bg-gray-700 p-2 rounded-xl cursor-pointer gap-3"
                   onClick={() => handlePlay(song)}
+                  className="
+                    flex items-center gap-[1vw]
+                    p-[0.8vw]
+                    rounded-lg
+                    hover:bg-gray-600
+                    cursor-pointer
+                  "
                 >
                   <img
                     src={song.Image || "https://via.placeholder.com/50"}
-                    className="w-12 h-12 rounded-lg"
+                    className="
+                      w-[clamp(2.2rem,3vw,3rem)]
+                      h-[clamp(2.2rem,3vw,3rem)]
+                      rounded-lg
+                      object-cover
+                    "
                   />
-                  <span>{song.Title}</span>
+                  <span
+                    className="
+                      truncate
+                      text-[clamp(0.8rem,1vw,0.95rem)]
+                    "
+                  >
+                    {song.Title}
+                  </span>
                 </div>
               ))}
           </div>
         )}
       </div>
 
-     
-      <div className="dropdown dropdown-end"  onClick={handleProfile}>
+      {/* Profile */}
+      <div onClick={handleProfile} className="cursor-pointer">
         <div
-          tabIndex={0}
-          role="button"
-          className="btn btn-ghost btn-circle avatar"
-         
+          className="
+            rounded-full overflow-hidden
+            w-[clamp(2.2rem,3vw,2.8rem)]
+            h-[clamp(2.2rem,3vw,2.8rem)]
+          "
         >
-          <div className="w-10 rounded-full">
-            <img src={imgsrc} alt="Profile" />
-          </div>
+          <img
+            src={imgsrc}
+            alt="Profile"
+            className="w-full h-full object-cover"
+          />
         </div>
       </div>
-    </div>
+    </nav>
   );
 };
 

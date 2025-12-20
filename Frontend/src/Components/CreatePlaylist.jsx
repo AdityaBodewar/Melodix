@@ -74,24 +74,28 @@ const CreatePlaylist = () => {
 
   return (
     <div className="p-4">
-      <div className="flex flex-col justify-between items-center mb-4">
+      <div className="flex flex-col lg:justify-between items-start lg:items-center mb-4 ">
         <button
          onClick={handleAddPlaylistClick}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition absolute z-40 "
         >
           Add Playlist
         </button>
-        <h2 className="text-xl font-bold mt-5">Your Playlists</h2>
+        <h2 className="text-xl font-bold mt-13 absolute lg:relative z-30 ">Your Playlists</h2>
       </div>
 
-      <div className="flex flex-col space-y-4">
+      <div className="
+    flex flex-row gap-4
+    overflow-x-auto whitespace-nowrap
+    lg:flex-col lg:overflow-y-auto lg:overflow-x-hidden
+    mt-30 lg:mt-0
+   ">
         {playlists.length > 0 ? (
           playlists.map((pl) => (
             <div
               key={pl.playlist_id}
               onClick={() => navigate(`/playlist/${pl.playlist_id}`)}
-              className="border rounded-full w-22 h-22 p-4 shadow cursor-pointer hover:bg-gray-200 transition"
-            >
+              className= "border rounded-full w-20 h-20 flex-shrink-0 items-center p-4 shadow cursor-pointer  ml-2 lg:ml-0    hover:bg-gray-200 transition "            >
               <h3 className="font-bold text-[13px]">{pl.playlist_name}</h3>
             </div>
           ))

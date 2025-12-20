@@ -1,10 +1,22 @@
 import { useAudio } from "../ContextProvider/AudioContext";
-import { useNavigate } from "react-router-dom";
-import { FaBackward, FaForward, FaPlay, FaPause, FaRandom, FaListUl, FaHeadphones, FaVolumeUp, FaExpand } from "react-icons/fa";
+import {
+  FaBackward,
+  FaForward,
+  FaPlay,
+  FaPause,
+  FaExpand,
+} from "react-icons/fa";
 
 const MiniPlayer = () => {
-  const navigate = useNavigate();
-  const { song, isPlaying, togglePlay, currentTime, duration, seek, setIsFullScreen } = useAudio();
+  const {
+    song,
+    isPlaying,
+    togglePlay,
+    currentTime,
+    duration,
+    seek,
+    setIsFullScreen,
+  } = useAudio();
 
   if (!song) return null;
 
@@ -16,64 +28,69 @@ const MiniPlayer = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-black text-white px-5 py-3 flex items-center justify-between shadow-lg z-50">
+    <div className="fixed bottom-0 left-0 w-full bg-base-100 px-3 py-2 shadow-lg z-50 overflow-x-hidden">
 
-    
-      <div className="flex items-center gap-3 w-1/4">
-        <img src={song.Image} className="w-12 h-12 rounded-lg object-cover" />
-        <div className="leading-tight">
-          <h3 className="font-semibold text-sm">{song.Title}</h3>
-          <p className="text-gray-300 text-xs">{song.Singer}</p>
-        </div>
-        
-      </div>
+      {/* MAIN CONTAINER — Always row, wrap on small screens */}
+      <div className="flex flex-row flex-wrap items-center justify-between gap-3 w-full">
 
-      {/* CENTER — Controls + Seekbar */}
-      <div className="flex flex-col items-center w-2/4">
-        
-        {/* Main Controls Row */}
-        <div className="flex items-center gap-6 mb-1">
-          {/* <FaRandom className="text-green-500 cursor-pointer" size={18} />*/}
-          <FaBackward className="cursor-pointer" size={18} /> 
-
-          <button
-            onClick={togglePlay}
-            className="bg-white text-black w-10 h-10 flex items-center justify-center rounded-full"
-          >
-            {isPlaying ? <FaPause size={18} /> : <FaPlay size={18} />}
-          </button>
-
-        <FaForward className="cursor-pointer" size={18} />
-           {/*  <FaListUl className="cursor-pointer" size={18} /> */}
-        </div>
-
-        {/* Seekbar */}
-        <div className="flex items-center gap-3 w-full">
-          <span className="text-xs">{formatTime(currentTime)}</span>
-
-          <input
-            type="range"
-            min={0}
-            max={duration || 0}
-            value={currentTime}
-            onChange={(e) => seek(parseFloat(e.target.value))}
-            className="w-full accent-white"
+        {/* LEFT — Song Info */}
+        <div className="flex flex-col sm:flex-row sm:items-center items-center gap-1 w-auto min-w-0 flex-shrink-0 text-center sm:text-left">
+          <img
+            src={song.Image}
+            className="w-12 h-12 md:w-12 md:h-12 rounded-lg object-cover flex-shrink-0"
           />
-
-          <span className="text-xs">{formatTime(duration)}</span>
+          <div className="truncate min-w-0">
+            <h3 className="font-semibold text-sm truncate">{song.Title}</h3>
+            <p className="text-gray-400 text-xs truncate">{song.Singer}</p>
+          </div>
         </div>
 
-      </div>
+        {/* CENTER — Controls + Seekbar */}
+        <div className="flex flex-col items-center flex-1 min-w-0">
+          {/* Controls */}
+          <div className="flex items-center gap-3 mb-1">
+            <FaBackward className="cursor-pointer" size={16} />
 
-      {/* RIGHT — Tools */}
-      <div className="flex items-center gap-4 w-1/4 justify-end">
-        
+            <button
+              onClick={togglePlay}
+              className="bg-white text-black w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full flex-shrink-0"
+            >
+              {isPlaying ? <FaPause size={16} /> : <FaPlay size={16} />}
+            </button>
 
-      <FaExpand
-  size={20}
-  className="cursor-pointer"
-  onClick={() => setIsFullScreen(true)}
-/>
+            <FaForward className="cursor-pointer" size={16} />
+          </div>
+
+          {/* Seekbar */}
+          <div className="flex items-center gap-2 w-full min-w-0">
+            <span className="text-xs hidden sm:block flex-shrink-0">
+              {formatTime(currentTime)}
+            </span>
+
+            <input
+              type="range"
+              min={0}
+              max={duration || 0}
+              value={currentTime}
+              onChange={(e) => seek(Number(e.target.value))}
+              className="flex-1 w-full accent-white min-w-0"
+            />
+
+            <span className="text-xs hidden sm:block flex-shrink-0">
+              {formatTime(duration)}
+            </span>
+          </div>
+        </div>
+
+        {/* RIGHT — Fullscreen */}
+        <div className="flex items-center justify-end w-auto flex-shrink-0">
+          <FaExpand
+            size={20}
+            className="cursor-pointer"
+            onClick={() => setIsFullScreen(true)}
+          />
+        </div>
+
       </div>
     </div>
   );

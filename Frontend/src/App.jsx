@@ -7,13 +7,13 @@ import CreatePlaylist from './Components/CreatePlaylist';
 import AddSongOnPlaylistPage from './Components/AddSongOnPlaylist';
 import PlaylistDetails from './Components/PlaylistDetails';
 import MiniPlayer from './Components/MiniPlayer';
-import { AudioProvider, useAudio } from './ContextProvider/AudioContext';
+import { AudioProvider } from './ContextProvider/AudioContext';
 import AboutArtist from './Components/AboutArtist';
 import ProfilePage from './Pages/ProfilePage';
 import FullScreenPlayer from './Components/FullScreenPlayer';
 
 const AppContent = () => {
-  const { isFullScreen } = useAudio(); // ✅ now INSIDE provider
+ 
 
   return (
     <Router>
@@ -28,8 +28,8 @@ const AppContent = () => {
         <Route path='/playlist/:playlistId/add' element={<AddSongOnPlaylistPage />} />
       </Routes>
 
-      {isFullScreen && <FullScreenPlayer />}
-      <MiniPlayer />
+      
+     
     </Router>
   );
 };

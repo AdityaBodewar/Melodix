@@ -8,48 +8,49 @@ import GetAllArtist from '../Components/GetAllArtist'
 import AddMusic from '../Components/AddMusic'
 import FullScreenPlayer from '../Components/FullScreenPlayer'
 import NowPlayingDetails from '../Components/NowPlayingDetails'
+import { useAudio } from '../ContextProvider/AudioContext';
+import MiniPlayer from '../Components/MiniPlayer'
 
 const HomePage = () => {
+  const { isFullScreen } = useAudio(); 
+
   return (
     <>
-    <div className="nav mb-5 h-full">
-      <NavBar/>
-    </div>
-    <div className="container flex ">
+      <div className="nav w-full fixed top-0 left-0 z-50  ">
+        <NavBar />
+      </div>
 
-       <div className="head  w-30 border-2 border-black ml-5 rounded-2xl">
-        <div className='overflow-x-auto h-full'>
-         <CreatePlaylist/>
-        
+      <div className="container flex flex-col mt-20 md:flex-row lg:flex-row">
+
+        <div className="head w-full lg:w-30 ml-5 rounded-2xl lg:h-[calc(100vh-95px)]">
+          <div className=" h-full lg:w-35 overflow-x-auto lg:overflow-y-auto lg:overflow-x-hidden">
+            <CreatePlaylist />
+          </div>
         </div>
 
+        <div className="ml-5 rounded-2xl w-full lg:w-[1190px] mb-15">
+          <div className="overflow-x-auto w-full ">
+            <GetAllMusic />
+          </div>
 
+          <div className="overflow-x-auto w-full  ">
+            <GetAllArtist />
+          </div>
+        </div>
 
-    </div>
-    <div className="ml-5 w-300 h-150 border-black border-2 rounded-2xl ">
-      <div className="overflow-x-auto w-full "  >
-      <GetAllMusic/>
-      
+        <div className="footer  rounded-2xl ml-5  mb-15">
+          <NowPlayingDetails />
+        </div>
+
       </div>
-      <div className="overflow-x-auto w-full "  >
-      
-       <GetAllArtist/>
+
+      {isFullScreen && <FullScreenPlayer />}
+
+      <div className="fixed bottom-0 left-0 w-full z-40 ">
+        <MiniPlayer />
       </div>
-    </div>
-
-
-
-    <div className="footer ml-5   border-black border-2 rounded-2xl ">
-
-     <NowPlayingDetails/>
- 
-      </div> 
-    </div>
-      
-    
-    
     </>
-  )
-}
+  );
+};
 
-export default HomePage
+export default HomePage;
