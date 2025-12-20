@@ -15,7 +15,7 @@ const Login = () => {
    } 
    const handleSubmit=()=>{
 
-    axios.post("http://localhost:5000/login",user)
+    axios.post("https://melodix-1.onrender.com/login",user)
     .then(res=>{alert(res.data.message);
        const token=res.data.Token;
        const role=res.data.Role;

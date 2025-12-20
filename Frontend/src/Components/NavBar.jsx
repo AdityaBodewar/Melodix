@@ -22,7 +22,7 @@ const NavBar = () => {
     if (!token) return;
 
     axios
-      .get("http://localhost:5000/profile", {
+      .get("https://melodix-1.onrender.com/profile", {
         headers: { Authorization: `Bearer ${token}` },
       })
       .then((res) => setProfile(res.data))
@@ -37,7 +37,7 @@ const NavBar = () => {
 
     setLoading(true);
     axios
-      .post("http://localhost:5000/searchmusic", { Title: search })
+      .post("https://melodix-1.onrender.com/searchmusic", { Title: search })
       .then((res) => {
         setResult(res.data.data || []);
         setLoading(false);

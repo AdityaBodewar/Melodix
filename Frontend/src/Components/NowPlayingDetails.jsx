@@ -8,7 +8,7 @@ const NowPlayingDetails = () => {
     return (
       <div className="bg-base-200 w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md hidden lg:block">
 
-      {/* SONG IMAGE */}
+     
       <img
         src={img} />
 
@@ -35,29 +35,19 @@ const NowPlayingDetails = () => {
   return (
     <div className=" w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md lg:block hidden">
 
-      {/* SONG IMAGE */}
+     
       <img
         src={song.Image}
         alt={song.Title}
         className="w-full h-70 rounded-lg object-cover "
       />
 
-      {/* SONG INFO */}
+     
       <div className="flex-1">
         <h3 className="font-semibold text-4xl">{song.Title}</h3>
         <p className="text-2xl text-gray-500 mt-5">{song.Singer}</p>
 
-        {/* <p className="text-xs mt-1 text-gray-400">
-          {isPlaying ? "Playing" : "Paused"} • {formatTime(currentTime)} / {formatTime(duration)}
-        </p> */}
-
-        {/* PROGRESS BAR */}
-        {/* <div className="w-full bg-gray-300 h-1 rounded mt-2">
-          <div
-            className="bg-green-500 h-1 rounded"
-            style={{ width: `${progress}%` }}
-          />
-        </div> */}
+        
       </div>
     </div>
   );

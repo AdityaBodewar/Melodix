@@ -15,7 +15,7 @@ const AddSongOnPlaylistPage = () => {
   useEffect(() => {
     const fetchSongs = async () => {
       try {
-        const res = await axios.get("http://localhost:5000/getallmusic");
+        const res = await axios.get("https://melodix-1.onrender.com/getallmusic");
         setSongs(res.data.data);
         setFilteredSongs(res.data.data);
       } catch (err) {
@@ -38,7 +38,7 @@ const AddSongOnPlaylistPage = () => {
     try {
       const token = localStorage.getItem("Token");
       const res = await axios.post(
-        "http://localhost:5000/addSongToPlaylist",
+        "https://melodix-1.onrender.com/addSongToPlaylist",
         { playlist_id: playlistId, song_id: songId },
         { headers: { Authorization: `Bearer ${token}` } }
       );

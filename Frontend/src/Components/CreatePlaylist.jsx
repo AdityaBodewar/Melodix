@@ -24,7 +24,7 @@ const CreatePlaylist = () => {
 
     try {
       
-      const res = await axios.get("http://localhost:5000/myPlaylists", {
+      const res = await axios.get("https://melodix-1.onrender.com/myPlaylists", {
         headers: { Authorization: `Bearer ${token}` },
       });
       setPlaylists(res.data.playlists);
@@ -42,7 +42,7 @@ const CreatePlaylist = () => {
     setMessage("");
     try {
       const res = await axios.post(
-        "http://localhost:5000/createPlaylist",
+        "https://melodix-1.onrender.com/createPlaylist",
         { playlist_name: newPlaylistName },
         { headers: { Authorization: `Bearer ${token}` } }
       );
