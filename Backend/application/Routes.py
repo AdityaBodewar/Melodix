@@ -10,7 +10,7 @@ from bson.json_util import dumps
 import json
 
 
-secret = os.getenv("SECRET_KEY") or "melodix_super_secret_key"
+secret = os.getenv("SECRET_KEY")
 
 
 
@@ -41,7 +41,7 @@ def addmusic():
         data={"Title":title,"Singer":singer,"Language":language,"Type":type,"Image":img_result["secure_url"],"Song":audio_result["secure_url"]}
         
         result=db.Songs.insert_one(data)
-        check=db.Artist.update_one({"_id":artist['_id']},{"$push":{"SongsCreated":result.inserted_id}})
+        db.Artist.update_one({"_id":artist['_id']},{"$push":{"SongsCreated":result.inserted_id}})
 
         inserted_doc=db.Songs.find_one({"_id":result.inserted_id})
         inserted_doc["_id"] = str(inserted_doc["_id"])
@@ -428,12 +428,9 @@ def login_flutter():
         artist = db.Artist.find_one({"Email": email})
         admin = db.Admin.find_one({"Email": email})
 
-        def generate_token(role, obj):
-            payload = {
-                "user_id": str(obj["_id"]),  
-                "Email": email,
-                "Role": role
-            }
+       
+        def generate_token(role):
+            payload = {"Email": email, "Role": role,"user_id":str(user["_id"])}
 
             token = jwt.encode(payload, str(secret), algorithm="HS256")
             if isinstance(token, bytes):
@@ -444,19 +441,20 @@ def login_flutter():
             if password == admin.get("Password"):
                 return jsonify({
                     "message": "Admin Login Successfully",
-                    "Token": generate_token("Admin", admin),
-                    "Role": "Admin"
+                    "Token": token,
+                    "Role": "Admin",
+        
                 }), 200
             return jsonify({"message": "Wrong Password"}), 401
 
         if artist:
             if password == artist.get("Password"):
                 return jsonify({
-                    "message": "Artist Login Successfully",
-                    "Token": generate_token("Artist", artist),
-                    "Role": "Artist"
-                }), 200
-            return jsonify({"message": "Wrong Password"}), 401
+                "message": "Artist Login Successfully",
+                "Token": token,
+                "Role": "Artist"
+}), 200
+ 
 
         if user:
             if password == user.get("Password"):
