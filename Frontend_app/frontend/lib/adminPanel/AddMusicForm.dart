@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:frontend/Screens/HomePage.dart';
+import 'package:frontend/main_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:frontend/handleApi/ApiService%20.dart';
@@ -38,7 +39,7 @@ class AddMusicForm extends StatefulWidget {
 
 class _AddMusicFormState extends State<AddMusicForm> {
   final titleCtrl = TextEditingController();
-  final singerCtrl = TextEditingController();
+  // final singerCtrl = TextEditingController();
   final langCtrl = TextEditingController();
   final typeCtrl = TextEditingController();
 
@@ -65,7 +66,7 @@ class _AddMusicFormState extends State<AddMusicForm> {
 
   bool validateFields() {
     if (titleCtrl.text.isEmpty ||
-        singerCtrl.text.isEmpty ||
+        // singerCtrl.text.isEmpty ||
         langCtrl.text.isEmpty ||
         typeCtrl.text.isEmpty ||
         selectedImage == null ||
@@ -125,11 +126,11 @@ class _AddMusicFormState extends State<AddMusicForm> {
 
                 const SizedBox(height: 15),
 
-                TextField(
-                    controller: singerCtrl,
-                    decoration: buildInputDecoration("Singer Name", Icons.person)),
-
-                const SizedBox(height: 15),
+                // TextField(
+                //     controller: singerCtrl,
+                //     decoration: buildInputDecoration("Singer Name", Icons.person)),
+                //
+                // const SizedBox(height: 15),
 
                 TextField(
                     controller: langCtrl,
@@ -220,7 +221,7 @@ class _AddMusicFormState extends State<AddMusicForm> {
 
                     bool success = await ApiService.uploadMusic(
                       title: titleCtrl.text,
-                      singer: singerCtrl.text,
+                      // singer: singerCtrl.text,
                       language: langCtrl.text,
                       type: typeCtrl.text,
                       image: selectedImage!,
@@ -240,12 +241,12 @@ class _AddMusicFormState extends State<AddMusicForm> {
 
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => HomePage()),
+                        MaterialPageRoute(builder: (_) => MainScreen()),
                       );
 
                       setState(() {
                         titleCtrl.clear();
-                        singerCtrl.clear();
+                        // singerCtrl.clear();
                         langCtrl.clear();
                         typeCtrl.clear();
                         selectedImage = null;

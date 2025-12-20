@@ -106,31 +106,36 @@ class _RegisterPageState extends State<RegisterPage>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark ? Colors.black : Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
         backgroundColor: isDark ? Colors.black : Colors.white,
-        elevation: 0,
-        bottom: TabBar(
+        appBar: AppBar(
+          automaticallyImplyLeading: false,
+          backgroundColor: isDark ? Colors.black : Colors.white,
+          elevation: 0,
+          bottom: TabBar(
+            controller: _tabController,
+            indicatorColor: Colors.blue,
+            labelColor: isDark ? Colors.white : Colors.black,
+            unselectedLabelColor: Colors.grey,
+            tabs: const [
+              Tab(text: "User Register"),
+              Tab(text: "Artist Register"),
+            ],
+          ),
+        ),
+        body: TabBarView(
           controller: _tabController,
-          indicatorColor: Colors.blue,
-          labelColor: isDark ? Colors.white : Colors.black,
-          unselectedLabelColor: Colors.grey,
-          tabs: const [
-            Tab(text: "User Register"),
-            Tab(text: "Artist Register"),
+          children: [
+            _buildUserRegisterForm(isDark),
+            _buildArtistRegisterForm(isDark),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: [
-          _buildUserRegisterForm(isDark),
-          _buildArtistRegisterForm(isDark),
-        ],
-      ),
     );
   }
+
 
 
   Widget _buildUserRegisterForm(bool isDark) {
@@ -279,10 +284,13 @@ class _RegisterPageState extends State<RegisterPage>
       children: [
         Text("Already have an account?",
             style: TextStyle(color: isDark ? Colors.white70 : Colors.black54)),
-        TextButton(
-          onPressed: () => Navigator.push(
-              context, MaterialPageRoute(builder: (_) => const LoginPage())),
-          child: const Text("Login", style: TextStyle(color: Colors.blue)),
+         TextButton(onPressed: () => Navigator.pushAndRemoveUntil(
+         context,
+               MaterialPageRoute(builder: (_) => const LoginPage()),
+                (route) => false,
+    ),
+
+    child: const Text("Login", style: TextStyle(color: Colors.blue)),
         )
       ],
     );

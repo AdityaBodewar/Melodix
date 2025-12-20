@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/AlbumsPage.dart';
+import 'package:frontend/AllArtistsPage.dart';
 import 'package:frontend/DownloadsPage.dart';
 import 'package:frontend/LoginPage.dart';
 import 'package:frontend/Registerpage.dart';
@@ -18,7 +19,7 @@ class _LibraryScreenState extends State<Mylibrary> {
 
   List<Map<String, String>> libraryItems = [
     {'icon': 'album', 'title': 'Albums', 'subtitle': ''},
-    {'icon': 'person', 'title': 'Artists', 'subtitle': '0 artists'},
+    {'icon': 'person', 'title': 'Artists', 'subtitle': 'artists'},
     {'icon': 'download', 'title': 'Downloads', 'subtitle': ''},
   ];
 
@@ -208,6 +209,16 @@ class _LibraryScreenState extends State<Mylibrary> {
               MaterialPageRoute(builder: (_) => const AlbumsPage()),
             );
           }
+          if (title == "Artists") {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const AllArtistsPage(),
+              ),
+            );
+          }
+
+
         },
       ),
     );
