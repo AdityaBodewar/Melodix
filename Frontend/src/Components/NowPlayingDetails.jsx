@@ -6,7 +6,7 @@ const NowPlayingDetails = () => {
 
   if (!song) {
     return (
-      <div className="bg-base-200 w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md">
+      <div className="bg-base-200 w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md hidden lg:block">
 
       {/* SONG IMAGE */}
       <img
@@ -33,7 +33,7 @@ const NowPlayingDetails = () => {
     duration > 0 ? Math.floor((currentTime / duration) * 100) : 0;
 
   return (
-    <div className="bg-base-200 w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md">
+    <div className=" w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md lg:block hidden">
 
       {/* SONG IMAGE */}
       <img

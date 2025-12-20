@@ -26,13 +26,16 @@ const GetAllArtist = () => {
   };
 
   return (
-    <div className="flex gap-4 flex-wrap p-4">
+    <>
+    <p className="text-4xl ml-8 mt-7 absolute">Artist</p>
+    <div className="flex gap-4 mt-20">
+    
       {artists.length > 0 ? (
         artists.map((item) => (
           <div
             key={item._id}
             onClick={() => handleArtist(item)}
-            className="bg-base-100 w-48 flex-shrink-0 shadow-md mt-3 p-3 rounded-xl hover:bg-gray-600 transition group cursor-pointer"
+            className="bg-base-100 w-48 flex-shrink-0 shadow-md mt-3 p-3 rounded-xl hover:bg-gray-600 transition group"
           >
             <div className="relative w-full h-40 overflow-hidden rounded-xl">
               <img
@@ -50,6 +53,7 @@ const GetAllArtist = () => {
         <p>No artists found.</p>
       )}
     </div>
+    </>
   );
 };
 
