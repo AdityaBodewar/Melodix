@@ -5,7 +5,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  static const String baseUrl = "http://172.21.245.81:5000";
+  static const String baseUrl = "https://melodix-1.onrender.com";
 
 
   static const String addMusicUrl = "$baseUrl/addmusic";
@@ -20,7 +20,6 @@ class ApiService {
 
   static Future<bool> uploadMusic({
     required String title,
-    required String singer,
     required String language,
     required String type,
     required File image,
@@ -31,7 +30,6 @@ class ApiService {
 
     FormData formData = FormData.fromMap({
       "title": title,
-      "singer": singer,
       "language": language,
       "type": type,
       "image": await MultipartFile.fromFile(image.path),
@@ -39,10 +37,18 @@ class ApiService {
     });
 
     try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+
       Response response = await dio.post(
         addMusicUrl,
         data: formData,
         onSendProgress: onProgress,
+        options: Options(
+          headers: {
+            "Authorization": "Bearer $token",
+          },
+        ),
       );
 
       return response.statusCode == 200;
@@ -51,6 +57,7 @@ class ApiService {
       return false;
     }
   }
+
 
 
   static Future<List<dynamic>> fetchAllMusic() async {
