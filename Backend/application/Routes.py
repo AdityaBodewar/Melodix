@@ -38,7 +38,7 @@ def addmusic():
         data={"Title":title,"Singer":singer,"Language":language,"Type":type,"Image":img_result["secure_url"],"Song":audio_result["secure_url"]}
         
         result=db.Songs.insert_one(data)
-        check=db.Artist.update_one({"_id":artist['_id']},{"$push":{"SongsCreated":result.inserted_id}})
+        db.Artist.update_one({"_id":artist['_id']},{"$push":{"SongsCreated":result.inserted_id}})
 
         inserted_doc=db.Songs.find_one({"_id":result.inserted_id})
         inserted_doc["_id"] = str(inserted_doc["_id"])
@@ -429,7 +429,7 @@ def login_flutter():
 
        
         def generate_token(role):
-            payload = {"Email": email, "Role": role}
+            payload = {"Email": email, "Role": role,"user_id":str(user["_id"])}
 
            
             token = jwt.encode(payload, str(secret), algorithm="HS256")
@@ -446,7 +446,8 @@ def login_flutter():
                 return jsonify({
                     "message": "Admin Login Successfully",
                     "Token": token,
-                    "Role": "Admin"
+                    "Role": "Admin",
+        
                 }), 200
             else:
                 return jsonify({"message": "wrong Password"}), 401
@@ -458,9 +459,7 @@ def login_flutter():
                 return jsonify({
                 "message": "Artist Login Successfully",
                 "Token": token,
-                "Role": "Artist",
-                "Fullname": artist.get("Fullname"),
-                "Email": artist.get("Email")
+                "Role": "Artist"
 }), 200
 
 
@@ -470,9 +469,7 @@ def login_flutter():
                 return jsonify({
                     "message": "User Login Successfully",
                     "Token": token,
-                    "Role": "User",
-                    "Fullname": user.get("Fullname"),
-                    "Email": user.get("Email")
+                    "Role": "User"
                 }), 200
             else:
                 return jsonify({"message": "wrong Password"}), 401
