@@ -19,48 +19,64 @@ class Profilepage extends StatefulWidget {
   State<Profilepage> createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<Profilepage> {
+class _ProfileScreenState extends State<Profilepage> with AutomaticKeepAliveClientMixin {
   String name = "Music Lover";
   String email = "musiclover@example.com";
   String role = "User";
   String? profileImage;
   bool forceRefreshImage = false;
-
-
   bool isProfileLoaded = false;
+  bool _hasLoadedOnce = false;
 
-  Future<void> loadProfileData() async {
+  @override
+  bool get wantKeepAlive => true;
+
+  Future<void> loadProfileData({bool forceRefresh = false}) async {
+    // Skip loading if already loaded and not forcing refresh
+    if (!forceRefresh && _hasLoadedOnce) {
+      print("✅ Using cached profile data - no reload needed");
+      return;
+    }
+
+
     final result = await ApiService.getProfile();
 
     if (result["status"] == 200) {
       final user = result["data"];
 
-      setState(() {
-        name = user["Fullname"] ?? "Music Lover";
-        email = user["Email"] ?? "musiclover@example.com";
-        role = (user["Role"] ?? "User").toString();
-        profileImage = user["Image"] ?? user["Profile"];
-        isProfileLoaded = true;
-        forceRefreshImage = false;
-
-      });
+      if (mounted) {
+        setState(() {
+          name = user["Fullname"] ?? "Music Lover";
+          email = user["Email"] ?? "musiclover@example.com";
+          role = (user["Role"] ?? "User").toString();
+          profileImage = user["Image"] ?? user["Profile"];
+          isProfileLoaded = true;
+          forceRefreshImage = false;
+          _hasLoadedOnce = true;
+        });
+      }
     } else {
-      setState(() {
-        isProfileLoaded = true;
-
-
-      });
+      if (mounted) {
+        setState(() {
+          isProfileLoaded = true;
+          _hasLoadedOnce = true;
+        });
+      }
     }
   }
 
   @override
   void initState() {
     super.initState();
-    loadProfileData();
+    if (!_hasLoadedOnce) {
+      loadProfileData();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
 
     if (!isProfileLoaded) {
@@ -77,145 +93,143 @@ class _ProfileScreenState extends State<Profilepage> {
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(bottom: 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 30),
+      body: RefreshIndicator(
+        onRefresh: () => loadProfileData(forceRefresh: true),
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.only(bottom: 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 30),
 
-            CircleAvatar(
-              radius: 60,
-              backgroundColor: Colors.blue,
-              backgroundImage: (profileImage != null && profileImage!.isNotEmpty)
-                  ? NetworkImage(
-                forceRefreshImage
-                    ? "${profileImage!}?t=${DateTime.now().millisecondsSinceEpoch}"
-                    : profileImage!,
-              )
-                  : null,
-              child: (profileImage == null || profileImage!.isEmpty)
-                  ? const Icon(Icons.person, size: 60, color: Colors.white)
-                  : null,
-            ),
-
-
-            const SizedBox(height: 16),
-
-            Text(
-              name,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
+              CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.blue,
+                backgroundImage: (profileImage != null && profileImage!.isNotEmpty)
+                    ? NetworkImage(
+                  forceRefreshImage
+                      ? "${profileImage!}?t=${DateTime.now().millisecondsSinceEpoch}"
+                      : profileImage!,
+                )
+                    : null,
+                child: (profileImage == null || profileImage!.isEmpty)
+                    ? const Icon(Icons.person, size: 60, color: Colors.white)
+                    : null,
               ),
-            ),
 
-            const SizedBox(height: 8),
+              const SizedBox(height: 16),
 
-            Text(
-              email,
-              style: TextStyle(
-                color: Theme.of(context).hintColor,
-                fontSize: 14,
-              ),
-            ),
-
-            const SizedBox(height: 30),
-
-            if (role.toLowerCase() == "artist")
-              Padding(
-                padding:
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  tileColor: Colors.blue.withOpacity(0.12),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  leading:
-                  const Icon(Icons.library_music, color: Colors.blue),
-                  title: const Text(
-                    "Add Song",
-                    style: TextStyle(
-                      color: Colors.blue,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  trailing:
-                  const Icon(Icons.chevron_right, color: Colors.blue),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => AddMusicForm()),
-                    );
-                  },
+              Text(
+                name,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
 
-            _buildProfileOption(Icons.edit, 'Edit Profile', () async {
-              final updated = await Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const EditProfilePage()),
-              );
+              const SizedBox(height: 8),
 
-              if (updated == true) {
-                forceRefreshImage = true;
+              Text(
+                email,
+                style: TextStyle(
+                  color: Theme.of(context).hintColor,
+                  fontSize: 14,
+                ),
+              ),
 
-                loadProfileData();
-              }
-            }),
+              const SizedBox(height: 30),
 
-            _buildProfileOption(Icons.notifications, 'Notifications', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const SettingsPage()),
-              );
-            }),
+              if (role.toLowerCase() == "artist")
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  child: ListTile(
+                    tileColor: Colors.blue.withOpacity(0.12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    leading: const Icon(Icons.library_music, color: Colors.blue),
+                    title: const Text(
+                      "Add Song",
+                      style: TextStyle(
+                        color: Colors.blue,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right, color: Colors.blue),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AddMusicForm()),
+                      );
+                    },
+                  ),
+                ),
 
-            _buildProfileOption(Icons.privacy_tip, 'Privacy', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const PrivacyPage()),
-              );
-            }),
+              _buildProfileOption(Icons.edit, 'Edit Profile', () async {
+                final updated = await Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditProfilePage()),
+                );
 
-            _buildProfileOption(Icons.dark_mode, 'Theme', () {
-              ThemeController.toggleTheme();
-            }),
+                if (updated == true) {
+                  forceRefreshImage = true;
+                  await loadProfileData(forceRefresh: true);
+                }
+              }),
 
-            _buildProfileOption(Icons.help, 'Help & Support', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const HelpSupportPage()),
-              );
-            }),
+              _buildProfileOption(Icons.notifications, 'Notifications', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SettingsPage()),
+                );
+              }),
 
-            _buildProfileOption(Icons.info, 'About', () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const AboutUsPage()),
-              );
-            }),
+              _buildProfileOption(Icons.privacy_tip, 'Privacy', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrivacyPage()),
+                );
+              }),
 
-            _buildProfileOption(Icons.policy, "Terms & Condition", () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const TermsPage()),
-              );
-            }),
+              _buildProfileOption(Icons.dark_mode, 'Theme', () {
+                ThemeController.toggleTheme();
+              }),
 
-            _buildProfileOption(Icons.logout, "Logout", showLogoutConfirmDialog),
+              _buildProfileOption(Icons.help, 'Help & Support', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const HelpSupportPage()),
+                );
+              }),
 
-            const SizedBox(height: 20),
-          ],
+              _buildProfileOption(Icons.info, 'About', () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AboutUsPage()),
+                );
+              }),
+
+              _buildProfileOption(Icons.policy, "Terms & Condition", () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const TermsPage()),
+                );
+              }),
+
+              _buildProfileOption(Icons.logout, "Logout", showLogoutConfirmDialog),
+
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildProfileOption(
-      IconData icon, String title, VoidCallback onTap) {
+  Widget _buildProfileOption(IconData icon, String title, VoidCallback onTap) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).textTheme.bodyMedium?.color;
     final subtitleColor = isDark ? Colors.grey : Colors.black54;
@@ -247,8 +261,7 @@ class _ProfileScreenState extends State<Profilepage> {
               Navigator.pop(context);
               await logoutUser();
             },
-            style:
-            ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
             child: const Text("Yes"),
           ),
         ],
@@ -261,7 +274,6 @@ class _ProfileScreenState extends State<Profilepage> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.remove("token");
     await prefs.remove("role");
-
 
     Navigator.pushAndRemoveUntil(
       context,
