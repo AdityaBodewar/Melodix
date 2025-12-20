@@ -94,24 +94,28 @@ class ApiService {
     required String email,
     required String password,
   }) async {
-    Dio dio = Dio();
-
     try {
-      Response res = await dio.post(
-        registerUserUrl,
+      Dio dio = Dio();
+
+      final res = await dio.post(
+        "$baseUrl/registeruser",
         data: {
           "Fullname": fullname,
           "Username": username,
           "Email": email,
           "Password": password,
         },
+        options: Options(
+          validateStatus: (status) => true,
+        ),
       );
 
       return res.data;
     } catch (e) {
-      return {"error": e.toString()};
+      return {"error": "Network error"};
     }
   }
+
 
 
   static Future<Map<String, dynamic>> registerArtist({
@@ -121,11 +125,11 @@ class ApiService {
     required String password,
     required String type,
   }) async {
-    Dio dio = Dio();
-
     try {
-      Response res = await dio.post(
-        registerArtistUrl,
+      Dio dio = Dio();
+
+      final res = await dio.post(
+        "$baseUrl/registerArtist",
         data: {
           "Fullname": fullname,
           "Username": username,
@@ -133,11 +137,14 @@ class ApiService {
           "Password": password,
           "Type": type,
         },
+        options: Options(
+          validateStatus: (status) => true,
+        ),
       );
 
       return res.data;
     } catch (e) {
-      return {"error": e.toString()};
+      return {"error": "Network error"};
     }
   }
 

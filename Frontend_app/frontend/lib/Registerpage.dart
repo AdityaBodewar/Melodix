@@ -50,16 +50,25 @@ class _RegisterPageState extends State<RegisterPage>
       password: password.text.trim(),
     );
 
-    if (response.containsKey("error")) {
+    if (response["error"] != null) {
       _showError(response["error"]);
-    } else if (response["message"] != null &&
-        response["message"].toString().contains("already")) {
-      _showError(response["message"]);
-    } else {
-      _showSuccess("User Registered Successfully!");
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+      return;
+    }
+
+    final message = response["message"]?.toString() ?? "";
+
+    if (message == "user registered Successfully") {
+      _showSuccess(message);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    }
+    else {
+      _showError(message.isEmpty ? "Registration failed" : message);
     }
   }
+
 
   Future<void> registerArtist() async {
     if (!_formKeyArtist.currentState!.validate()) return;
@@ -72,16 +81,25 @@ class _RegisterPageState extends State<RegisterPage>
       type: artistType.text.trim(),
     );
 
-    if (response.containsKey("error")) {
+    if (response["error"] != null) {
       _showError(response["error"]);
-    } else if (response["message"] != null &&
-        response["message"].toString().contains("already")) {
-      _showError(response["message"]);
+      return;
+    }
+
+    final message = response["message"]?.toString() ?? "";
+
+    if (message == "Artist registered Successfully") {
+      _showSuccess(message);
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
     } else {
-      _showSuccess("Artist Registered Successfully!");
-      Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginPage()));
+      _showError(message.isEmpty ? "Registration failed" : message);
     }
   }
+
+
 
 
   @override
