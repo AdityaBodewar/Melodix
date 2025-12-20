@@ -1,20 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:frontend/LoginPage.dart';
+import 'package:frontend/Registerpage.dart';
 
-// Screens
+import 'MusicController.dart';
 import 'Screens/HomePage.dart';
 import 'Screens/SearchPage.dart';
 import 'Screens/ProfilePage.dart';
 import 'Screens/MyLibrary.dart';
 import 'main_screen.dart';
 
-// Theme Controller
 import 'theme_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Status Bar Design
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
@@ -25,6 +25,8 @@ Future<void> main() async {
   );
 
   await ThemeController.loadTheme();
+  await MusicController.configureAudioSession();
+
 
 
   runApp(const MusicApp());
@@ -42,10 +44,8 @@ class MusicApp extends StatelessWidget {
           title: 'Melodix App',
           debugShowCheckedModeBanner: false,
 
-          //  Whole App Theme Controller
           themeMode: mode,
 
-          //  LIGHT THEME
           theme: ThemeData(
             brightness: Brightness.light,
             scaffoldBackgroundColor: Colors.white,
@@ -62,7 +62,6 @@ class MusicApp extends StatelessWidget {
             ),
           ),
 
-          //  DARK THEME
           darkTheme: ThemeData(
             brightness: Brightness.dark,
             scaffoldBackgroundColor: const Color(0xFF121212),
@@ -78,15 +77,15 @@ class MusicApp extends StatelessWidget {
             ),
           ),
 
-          // Starting Screen
           home: const MainScreen(),
 
-          // App Routes
           routes: {
             '/home': (context) => HomePage(),
             '/search': (context) => Searchpage(),
             '/library': (context) => Mylibrary(),
             '/profile': (context) => Profilepage(),
+            '/login' : (context) => LoginPage(),
+            '/register': (context) => RegisterPage(),
           },
         );
       },

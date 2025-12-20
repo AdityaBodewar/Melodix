@@ -2,27 +2,22 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  // ==================== BASE URL =====================
   static const String baseUrl = "http://172.21.245.81:5000";
 
-  // ==================== MUSIC APIS ====================
+
   static const String addMusicUrl = "$baseUrl/addmusic";
   static const String getMusicUrl = "$baseUrl/getallmusic";
   static const String searchMusicUrl = "$baseUrl/searchmusic";
 
-  // ==================== USER & AUTH ====================
+
   static const String registerUserUrl = "$baseUrl/registeruser";
   static const String registerArtistUrl = "$baseUrl/registerArtist";
   static const String loginUrl = "$baseUrl/login_flutter";
 
-  // NEW PROFILE UPDATE API
-  static const String updateProfileUrl = "$baseUrl/update_profile";
 
-  // ======================================================
-  // 🔥 UPLOAD MUSIC (ADMIN)
-  // ======================================================
   static Future<bool> uploadMusic({
     required String title,
     required String singer,
@@ -57,9 +52,7 @@ class ApiService {
     }
   }
 
-  // ======================================================
-  // 🔥 FETCH ALL MUSIC
-  // ======================================================
+
   static Future<List<dynamic>> fetchAllMusic() async {
     Dio dio = Dio();
 
@@ -75,9 +68,6 @@ class ApiService {
     return [];
   }
 
-  // ======================================================
-  // 🔥 SEARCH MUSIC
-  // ======================================================
   static Future<List<dynamic>> searchMusic(String query) async {
     Dio dio = Dio();
 
@@ -97,9 +87,7 @@ class ApiService {
     return [];
   }
 
-  // ======================================================
-  // 🔥 REGISTER USER
-  // ======================================================
+
   static Future<Map<String, dynamic>> registerUser({
     required String fullname,
     required String username,
@@ -125,9 +113,7 @@ class ApiService {
     }
   }
 
-  // ======================================================
-  // 🔥 REGISTER ARTIST
-  // ======================================================
+
   static Future<Map<String, dynamic>> registerArtist({
     required String fullname,
     required String username,
@@ -155,9 +141,7 @@ class ApiService {
     }
   }
 
-  // ======================================================
-  // 🔥 LOGIN
-  // ======================================================
+
   static Future<Map<String, dynamic>> login_flutter({
     required String email,
     required String password,
@@ -186,36 +170,97 @@ class ApiService {
     }
   }
 
-  // ======================================================
-  // 🔥 UPDATE PROFILE (Fullname + Email + Image)
-  // ======================================================
-  static Future<Map<String, dynamic>> updateProfile({
-    required String oldEmail,
-    required String fullname,
-    required String newEmail,
-    required String role,
-    String? imagePath,
-  }) async {
-    var request = http.MultipartRequest("POST", Uri.parse(updateProfileUrl));
 
-    request.fields["OldEmail"] = oldEmail;
-    request.fields["Fullname"] = fullname;
-    request.fields["NewEmail"] = newEmail;
-    request.fields["Role"] = role;
+  static Future<List<dynamic>> fetchAllArtists() async {
+    Dio dio = Dio();
 
-    if (imagePath != null) {
-      request.files.add(
-        await http.MultipartFile.fromPath("Image", imagePath),
-      );
+    try {
+      final res = await dio.get("$baseUrl/getallartist");
+
+      if (res.statusCode == 200) {
+        return res.data["artist"] ?? [];
+      }
+    } catch (e) {
+      print("Fetch artist error: $e");
     }
 
-    var response = await request.send();
-    var body = await response.stream.bytesToString();
+    return [];
+  }
+
+
+  static Future<List<dynamic>> fetchSongsOfArtist(String artistId) async {
+    Dio dio = Dio();
+
+    try {
+      final res = await dio.get("$baseUrl/getsongofartist/$artistId");
+
+      if (res.statusCode == 200) {
+        return res.data["data"] ?? [];
+      }
+    } catch (e) {
+      print("Fetch artist songs error: $e");
+    }
+
+    return [];
+  }
+
+  static Future<Map<String, dynamic>> getProfile() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+
+    if (token == null) {
+      return {"status": 401};
+    }
+
+    Dio dio = Dio();
+
+    final res = await dio.get(
+      "$baseUrl/profile",
+      options: Options(
+        headers: {
+          "Authorization": "Bearer $token",
+        },
+        validateStatus: (_) => true,
+      ),
+    );
 
     return {
-      "status": response.statusCode,
-      "data": json.decode(body),
+      "status": res.statusCode,
+      "data": res.data,
     };
   }
+
+  static Future<bool> updateProfile({
+    required String fullname,
+    required String username,
+    required String email,
+    File? image,
+  }) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString("token");
+
+    Dio dio = Dio();
+
+    FormData data = FormData.fromMap({
+      "Fullname": fullname,
+      "Username": username,
+      "Email": email,
+      if (image != null)
+        "Image": await MultipartFile.fromFile(image.path),
+    });
+
+    final res = await dio.put(
+      "$baseUrl/profile",
+      data: data,
+      options: Options(
+        headers: {"Authorization": "Bearer $token"},
+        validateStatus: (_) => true,
+      ),
+    );
+
+    return res.statusCode == 200;
+  }
+
+
 
 }

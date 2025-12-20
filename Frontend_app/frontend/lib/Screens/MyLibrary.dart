@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/AlbumsPage.dart';
 import 'package:frontend/DownloadsPage.dart';
+import 'package:frontend/LoginPage.dart';
+import 'package:frontend/Registerpage.dart';
+import 'package:frontend/Screens/ProfilePage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class Mylibrary extends StatefulWidget {
@@ -14,12 +17,9 @@ class _LibraryScreenState extends State<Mylibrary> {
   int downloadedCount = 0;
 
   List<Map<String, String>> libraryItems = [
-    {'icon': 'favorite', 'title': 'Liked Songs', 'subtitle': '0 songs'},
-    {'icon': 'playlist_play', 'title': 'Playlists', 'subtitle': '0 playlist'},
     {'icon': 'album', 'title': 'Albums', 'subtitle': ''},
     {'icon': 'person', 'title': 'Artists', 'subtitle': '0 artists'},
     {'icon': 'download', 'title': 'Downloads', 'subtitle': ''},
-    {'icon': 'history', 'title': 'Recently Played', 'subtitle': '0 songs'},
   ];
 
   @override
@@ -54,7 +54,94 @@ class _LibraryScreenState extends State<Mylibrary> {
               backgroundColor: Colors.blue,
               child: IconButton(
                 icon: const Icon(Icons.person, color: Colors.white),
-                onPressed: () {},
+                onPressed: () async{
+                  SharedPreferences prefs = await SharedPreferences.getInstance();
+                  String? token = prefs.getString("token");
+
+                  final isDark = Theme.of(context).brightness == Brightness.dark;
+
+                  // if user login go to profile page
+                  if (token != null && token.isNotEmpty) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => Profilepage()),
+                    );
+                    return;
+                  }
+
+                  // if user not login show register option
+                  showModalBottomSheet(
+                    context: context,
+                    backgroundColor: isDark ? Colors.black : Colors.white,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                    ),
+                    builder: (context) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+
+                          Padding(
+                            padding: const EdgeInsets.all(16.0),
+                            child: Text(
+                              "Account Options",
+                              style: TextStyle(
+                                color: isDark ? Colors.white : Colors.black,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+
+                          Divider(
+                            height: 1,
+                            color: isDark ? Colors.white24 : Colors.black12,
+                          ),
+
+                          ListTile(
+                            leading: Icon(Icons.login,
+                                color: isDark ? Colors.white : Colors.black87),
+                            title: Text("Login",
+                                style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black)),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => LoginPage()),
+                              );
+                            },
+                          ),
+
+                          ListTile(
+                            leading: Icon(Icons.app_registration,
+                                color: isDark ? Colors.white : Colors.black87),
+                            title: Text("Register",
+                                style: TextStyle(
+                                    color: isDark ? Colors.white : Colors.black)),
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (_) => RegisterPage()),
+                              );
+                            },
+                          ),
+
+                          // CANCEL
+                          ListTile(
+                            leading: const Icon(Icons.close, color: Colors.redAccent),
+                            title: const Text(
+                              "Cancel",
+                              style: TextStyle(color: Colors.redAccent),
+                            ),
+                            onTap: () => Navigator.pop(context),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ),
           ),
@@ -77,18 +164,13 @@ class _LibraryScreenState extends State<Mylibrary> {
 
   IconData _getIcon(String iconName) {
     switch (iconName) {
-      case 'favorite':
-        return Icons.favorite;
-      case 'playlist_play':
-        return Icons.playlist_play;
+
       case 'album':
         return Icons.album;
       case 'person':
         return Icons.person;
       case 'download':
         return Icons.download;
-      case 'history':
-        return Icons.history;
       default:
         return Icons.music_note;
     }

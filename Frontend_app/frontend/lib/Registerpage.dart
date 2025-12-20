@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend/LoginPage.dart';
-import 'package:frontend/handleApi/ApiService .dart';   // <-- IMPORTANT
+import 'package:frontend/Screens/HomePage.dart';
+import 'package:frontend/handleApi/ApiService .dart';
+import 'package:frontend/main_screen.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
@@ -37,9 +39,7 @@ class _RegisterPageState extends State<RegisterPage>
     _tabController = TabController(length: 2, vsync: this);
   }
 
-  // ------------------------------------------------------------------------
-  // 🔥 USER REGISTER FUNCTION
-  // ------------------------------------------------------------------------
+
   Future<void> registerUser() async {
     if (!_formKeyUser.currentState!.validate()) return;
 
@@ -61,9 +61,6 @@ class _RegisterPageState extends State<RegisterPage>
     }
   }
 
-  // ------------------------------------------------------------------------
-  // 🔥 ARTIST REGISTER FUNCTION
-  // ------------------------------------------------------------------------
   Future<void> registerArtist() async {
     if (!_formKeyArtist.currentState!.validate()) return;
 
@@ -86,9 +83,7 @@ class _RegisterPageState extends State<RegisterPage>
     }
   }
 
-  // ------------------------------------------------------------------------
-  // UI STARTS
-  // ------------------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -119,9 +114,7 @@ class _RegisterPageState extends State<RegisterPage>
     );
   }
 
-  // ------------------------------------------------------------------------
-  // USER REGISTRATION FORM
-  // ------------------------------------------------------------------------
+
   Widget _buildUserRegisterForm(bool isDark) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -157,9 +150,7 @@ class _RegisterPageState extends State<RegisterPage>
     );
   }
 
-  // ------------------------------------------------------------------------
-  // ARTIST REGISTRATION FORM
-  // ------------------------------------------------------------------------
+
   Widget _buildArtistRegisterForm(bool isDark) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -175,9 +166,9 @@ class _RegisterPageState extends State<RegisterPage>
                     fontWeight: FontWeight.bold)),
             const SizedBox(height: 20),
 
-            _field(artistName, "Artist Name", Icons.person),
+            _field(artistName, "Artist Full Name", Icons.person),
             _space(),
-            _field(stageName, "Stage Name", Icons.music_note),
+            _field(stageName, "Username", Icons.music_note),
             _space(),
             _field(artistType, "Artist Type (Rap, Pop...)", Icons.category),
             _space(),
@@ -194,9 +185,6 @@ class _RegisterPageState extends State<RegisterPage>
     );
   }
 
-  // ------------------------------------------------------------------------
-  // REUSABLE WIDGETS
-  // ------------------------------------------------------------------------
 
   Widget _field(TextEditingController c, String label, IconData icon,
       {FormFieldValidator<String>? validator}) {

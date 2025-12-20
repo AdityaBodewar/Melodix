@@ -23,8 +23,7 @@ class SongPlayerPage extends StatefulWidget {
 }
 
 class _SongPlayerPageState extends State<SongPlayerPage> {
-  // final AudioPlayer _player = AudioPlayer();
-  final AudioPlayer _player = MusicController.player;   // 🔥 global player
+  final AudioPlayer _player = MusicController.player;
 
 
   late int index;
@@ -43,15 +42,12 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     index = widget.currentIndex;
     currentSong = widget.songs[index];
 
-    // Play only if switching song
     if (MusicController.currentIndex != index) {
       playSong();
     } else {
-      // sync playing state
       setState(() => isPlaying = MusicController.isPlaying);
     }
 
-    // ⭐ Sync UI with already playing song
     _player.getCurrentPosition().then((p) {
       if (p != null) {
         setState(() => _position = p);
@@ -77,25 +73,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
 
-  // ▶ PLAY SONG
-  // Future<void> playSong() async {
-  //   try {
-  //     await _player.stop();
-  //     await _player.setSourceUrl(currentSong["Song"]);
-  //     await _player.resume();
-  //     setState(() => isPlaying = true);
-  //   } catch (_) {}
-  //
-  //   MusicController.updateSong(
-  //     newTitle: currentSong["Title"],
-  //     newSinger: currentSong["Singer"],
-  //     newImage: currentSong["Image"],
-  //     index: index,
-  //     songList: widget.songs,
-  //   );
-  //
-  //
-  // }
+
   Future<void> playSong() async {
     try {
       await _player.stop();
@@ -104,7 +82,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
       setState(() => isPlaying = true);
 
-      // 🌟 UPDATE MUSIC CONTROLLER (MOST IMPORTANT)
       MusicController.updateSong(
         newTitle: currentSong["Title"],
         newSinger: currentSong["Singer"],
@@ -113,7 +90,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
         songList: widget.songs,
       );
 
-      // ❗ RESET OFFLINE MODE
       MusicController.isOffline = false;
       MusicController.localFilePath = null;
 
@@ -121,7 +97,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
   }
 
 
-  // ⏭ NEXT SONG
   void playNext() {
     if (index < widget.songs.length - 1) {
       index++;
@@ -130,7 +105,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     }
   }
 
-  // ⏮ PREVIOUS SONG
   void playPrevious() {
     if (index > 0) {
       index--;
@@ -139,7 +113,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     }
   }
 
-  // 💾 Save Download Info
   Future<void> saveDownloadedSong(Map song) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> downloaded = prefs.getStringList("downloadedSongs") ?? [];
@@ -147,7 +120,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     await prefs.setStringList("downloadedSongs", downloaded);
   }
 
-  // ⬇ DOWNLOAD SONG
   Future<void> downloadSong() async {
     try {
       final dir = await getApplicationDocumentsDirectory();
@@ -181,13 +153,7 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
     }
   }
 
-  // @override
-  // void dispose() {
-  //   _player.dispose();
-  //   super.dispose();
-  // }
 
-  // TIME FORMATTER
   String formatTime(Duration d) {
     String two(int n) => n.toString().padLeft(2, "0");
     return "${two(d.inMinutes)}:${two(d.inSeconds % 60)}";
@@ -222,15 +188,32 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
           PopupMenuButton<String>(
             icon: Icon(Icons.more_vert, color: textColor),
             onSelected: (value) {
+              // if (value == "add") {
+              //   Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //       builder: (_) => MyPlaylistsPage(
+              //         songId: currentSong["_id"], // make sure song list contains _id
+              //       ),
+              //     ),
+              //   );
+              // }
+
               if (value == "download") downloadSong();
             },
-            itemBuilder: (_) =>
-            [const PopupMenuItem(value: "download", child: Text("Download Song"))],
+
+            itemBuilder: (_) => [
+
+              const PopupMenuItem(
+                value: "download",
+                child: Text("Download Song"),
+              ),
+            ],
+
           ),
         ],
       ),
 
-      // ⭐ SCROLLABLE BODY (NO OVERFLOW EVER)
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 40),
@@ -238,7 +221,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
             children: [
               const SizedBox(height: 20),
 
-              // 🎵 ALBUM ART
               ClipRRect(
                 borderRadius: BorderRadius.circular(18),
                 child: Image.network(
@@ -251,14 +233,12 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
               const SizedBox(height: 20),
 
-              // 🎼 TITLE
               Text(
                 currentSong["Title"],
                 style: TextStyle(
                     color: textColor, fontSize: 24, fontWeight: FontWeight.bold),
               ),
 
-              // 🎤 SINGER
               Text(
                 currentSong["Singer"],
                 style: TextStyle(color: subtitleColor, fontSize: 16),
@@ -266,7 +246,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
               const SizedBox(height: 20),
 
-              // 🎚 SEEK BAR
               Slider(
                 value: _duration.inSeconds == 0
                     ? 0
@@ -289,7 +268,6 @@ class _SongPlayerPageState extends State<SongPlayerPage> {
 
               const SizedBox(height: 30),
 
-              // ▶ CONTROLS
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
