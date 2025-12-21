@@ -74,7 +74,7 @@ const CreatePlaylist = () => {
 
   return (
     <div className="p-4">
-      <div className="flex flex-col lg:justify-between items-start lg:items-center mb-4 ">
+      <div className="flex flex-col lg:justify-between items-start lg:items-center mb-4  ">
         <button
          onClick={handleAddPlaylistClick}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition absolute z-40 "
@@ -104,7 +104,7 @@ const CreatePlaylist = () => {
         )}
       </div>
       {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center   bg-opacity-50 z-50">
+        <div className="fixed inset-0 flex items-center justify-center   bg-base-200 z-50">
           <div className=" p-6 rounded shadow w-96">
             <h2 className="text-lg font-bold mb-2">Create Playlist</h2>
             <input

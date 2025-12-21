@@ -11,6 +11,7 @@ import { AudioProvider } from './ContextProvider/AudioContext';
 import AboutArtist from './Components/AboutArtist';
 import ProfilePage from './Pages/ProfilePage';
 import FullScreenPlayer from './Components/FullScreenPlayer';
+import CreatePlaylistPage from './Pages/CreatePlaylistPage';
 
 const AppContent = () => {
  
@@ -23,7 +24,7 @@ const AppContent = () => {
         <Route path='/profile' element={<ProfilePage />} />
         <Route path='/aboutartist' element={<AboutArtist />} />
         <Route path='/register' element={<RegisterPage />} />
-        <Route path='/playlists' element={<CreatePlaylist />} />
+        <Route path='/playlists' element={<CreatePlaylistPage />} />
         <Route path='/playlist/:playlistId' element={<PlaylistDetails />} />
         <Route path='/playlist/:playlistId/add' element={<AddSongOnPlaylistPage />} />
       </Routes>
