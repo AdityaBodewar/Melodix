@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import default_profil from "../assets/profile_melodix.webp";
+import melodix_logo from "../assets/melodixicon.png"
 
 const NavBar = () => {
   const navigate = useNavigate();
@@ -71,15 +72,14 @@ const NavBar = () => {
     >
       {/* Logo */}
       <div className="flex items-center">
-        <span
-          className="
-            font-semibold
-            text-[clamp(1rem,1.6vw,1.4rem)]
-            cursor-pointer
-          "
-        >
-          Melodix
-        </span>
+        
+          
+        
+         <img src={melodix_logo} className="
+           lg:w-15 lg:h-15 w-10 h-10
+            cursor-pointer rounded-2xl
+          "/>
+        
       </div>
 
       {/* Search */}
@@ -96,6 +96,7 @@ const NavBar = () => {
             px-[1.2vw]
             h-[clamp(2.3rem,3vw,3rem)]
             text-[clamp(0.85rem,1.1vw,1rem)]
+            pl-3
           "
         />
 
@@ -159,6 +160,10 @@ const NavBar = () => {
               ))}
           </div>
         )}
+      </div>
+
+      <div>
+        <button className=" btn btn-success  rounded-2xl p-2 w-13 h-5 text-[12px] lg:text-[20px] lg:w-30 lg:h-13" onClick={() => window.location.href = "../public/melodix.apk"}> install </button>
       </div>
 
       {/* Profile */}

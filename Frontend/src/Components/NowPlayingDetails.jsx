@@ -6,7 +6,7 @@ const NowPlayingDetails = () => {
 
   if (!song) {
     return (
-      <div className="bg-base-200 w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md hidden lg:block">
+      <div className="bg-base-200 w-80 rounded-xl p-5 flex-col h-full  items-center shadow-md hidden lg:block ml-9">
 
      
       <img

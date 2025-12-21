@@ -35,13 +35,13 @@ const GetAllArtist = () => {
           <div
             key={item._id}
             onClick={() => handleArtist(item)}
-            className="bg-base-100 w-48 flex-shrink-0 shadow-md mt-3 p-3 rounded-xl hover:bg-gray-600 transition group"
+            className="bg-base-100 lg:w-48 w-30  flex-shrink-0 shadow-md mt-3 p-3 rounded-xl hover:bg-gray-600 transition group"
           >
-            <div className="relative w-full h-40 overflow-hidden rounded-xl">
+            <div className="relative w-full lg:h-40 h-fit overflow-hidden rounded-xl ">
               <img
                 src={item.Image || "https://via.placeholder.com/150"}
                 alt={item.Fullname}
-                className="w-full h-full object-cover rounded-xl"
+                className="lg:w-full lg:h-full object-cover  rounded-xl w-20 h-20"
               />
             </div>
 
