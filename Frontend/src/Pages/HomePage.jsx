@@ -38,7 +38,7 @@ const HomePage = () => {
           </div>
         </div>
 
-        <div className="footer  rounded-2xl ml-5  mb-15">
+        <div className="footer  rounded-2xl  mb-15">
           <NowPlayingDetails />
         </div>
 
