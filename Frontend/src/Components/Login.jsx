@@ -32,7 +32,7 @@ const Login = () => {
     <>
 
 
-    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4 ml-[650px] mt-[150px]">
+    <fieldset className="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4 lg:ml-[650px] ml-10 mt-[150px]">
   <legend className="fieldset-legend">Login</legend>
 
   <label className="label">Email</label>

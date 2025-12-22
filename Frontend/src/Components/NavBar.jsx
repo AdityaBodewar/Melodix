@@ -163,7 +163,7 @@ const NavBar = () => {
       </div>
 
       <div>
-        <button className=" btn btn-success  rounded-2xl p-2 w-13 h-5 text-[12px] lg:text-[20px] lg:w-30 lg:h-13" onClick={() => window.location.href = "../public/melodix.apk"}> install </button>
+        <button className=" btn btn-success  rounded-2xl p-2 w-13 h-5 text-[12px] lg:text-[20px] lg:w-30 lg:h-13" onClick={() => window.location.href = "https://github.com/AdityaBodewar/Melodix/releases/download/v1.0.0/Melodix.apk"}> install </button>
       </div>
 
       {/* Profile */}
